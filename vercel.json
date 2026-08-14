@@ -4,12 +4,12 @@
   "framework": "vite",
   "functions": {
     "api/chat.js": {
-      "maxDuration": 300,
-      "memory": 4096,
+      "maxDuration": 10,
+      "memory": 1024,
       "includeFiles": "data/catalogs/lamf/**"
     },
     "api/health.js": {
-      "memory": 512
+      "memory": 256
     }
   },
   "rewrites": [
