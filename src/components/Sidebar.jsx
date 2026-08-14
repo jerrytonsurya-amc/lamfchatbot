@@ -58,7 +58,12 @@ export default function Sidebar({ threads, activeThreadId, onSelectThread, onNew
         ))}
       </div>
 
-      <div className="sidebar-footer">Full-library research · 3 LAMF documents</div>
+      <div className="sidebar-footer">
+        <div>Full-library research · 3 LAMF documents</div>
+        <a href="/preview" className="sidebar-embed-link">
+          Website widget preview →
+        </a>
+      </div>
     </aside>
   );
 }

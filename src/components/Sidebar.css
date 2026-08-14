@@ -173,3 +173,16 @@
   text-align: center;
   line-height: 1.4;
 }
+
+.sidebar-embed-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: var(--accent-hover);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.sidebar-embed-link:hover {
+  text-decoration: underline;
+}
