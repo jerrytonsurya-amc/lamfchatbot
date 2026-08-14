@@ -43,10 +43,13 @@ export function isRateLimitError(err) {
   const type = err?.error?.type || err?.type || '';
   return (
     err?.status === 429 ||
+    err?.status === 503 ||
     type === 'rate_limit_error' ||
     msg.includes('429') ||
+    msg.includes('503') ||
     msg.includes('quota') ||
     msg.includes('rate limit') ||
+    msg.includes('high demand') ||
     msg.includes('Too Many Requests')
   );
 }

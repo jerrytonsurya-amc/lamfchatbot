@@ -2,16 +2,29 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-import pdf from 'pdf-parse/lib/pdf-parse.js';
 import { COMPANY } from '../shared/company.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
-const EXTRACTED_DIR = path.join(ROOT, 'data', 'extracted');
 const INDEX_PATH = path.join(ROOT, 'data', 'knowledge-index.json');
 
 const CHUNK_SIZE = 1200;
 const CHUNK_OVERLAP = 200;
+
+const LAMF_DOCUMENTS = [
+  {
+    path: path.join(ROOT, 'LAMF_General_Customer_FAQs.docx'),
+    category: 'LAMF Customer FAQs',
+  },
+  {
+    path: path.join(ROOT, 'LAMF_Voicebot_Consolidated_Calling_Knowledge_Base1.docx'),
+    category: 'LAMF Voicebot Knowledge Base',
+  },
+  {
+    path: path.join(ROOT, 'SCCL_LAMF_Program_Document_V3.0 1.docx'),
+    category: 'LAMF Program Document',
+  },
+];
 
 function chunkText(text, source, category, company = COMPANY) {
   const cleaned = text.replace(/\s+/g, ' ').trim();
@@ -47,56 +60,52 @@ function chunkText(text, source, category, company = COMPANY) {
   return chunks;
 }
 
-async function extractPdf(filePath, category, company) {
-  const buffer = fs.readFileSync(filePath);
-  const data = await pdf(buffer);
-  const source = path.basename(filePath);
-  return chunkText(data.text, source, category, company);
-}
-
-async function walkPdfs(dir, category, company = COMPANY) {
-  const chunks = [];
-  if (!fs.existsSync(dir)) return chunks;
-
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      chunks.push(...(await walkPdfs(fullPath, category, company)));
-    } else if (entry.name.toLowerCase().endsWith('.pdf')) {
-      try {
-        console.log(`Processing: ${fullPath}`);
-        const pdfChunks = await extractPdf(fullPath, category, company);
-        chunks.push(...pdfChunks);
-        console.log(`  -> ${pdfChunks.length} chunks`);
-      } catch (err) {
-        console.warn(`  Skipped ${fullPath}: ${err.message}`);
-      }
-    }
+function extractDocxText(docxPath) {
+  if (!fs.existsSync(docxPath)) {
+    throw new Error(`Missing ${docxPath}`);
   }
 
+  const xml = execSync(`unzip -p "${docxPath}" word/document.xml`, {
+    encoding: 'utf-8',
+    maxBuffer: 50 * 1024 * 1024,
+  });
+
+  let text = xml
+    .replace(/<w:tab[^/>]*\/>/g, '\t')
+    .replace(/<w:br[^/>]*\/>/g, '\n')
+    .replace(/<\/w:p>/g, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+async function ingestDocx(filePath, category) {
+  const source = path.basename(filePath);
+  console.log(`Processing: ${filePath}`);
+  const text = extractDocxText(filePath);
+  const chunks = chunkText(text, source, category, COMPANY);
+  console.log(`  -> ${chunks.length} chunks (${text.length} chars)`);
   return chunks;
 }
 
 async function ingest() {
-  console.log('Starting CIFC document ingestion...\n');
+  console.log('Starting LAMF document ingestion...\n');
 
   const allChunks = [];
 
-  const categories = [
-    { dir: path.join(EXTRACTED_DIR, 'CIFC', 'AR'), category: 'CIFC Annual Reports' },
-    { dir: path.join(EXTRACTED_DIR, 'CIFC', 'PPT'), category: 'CIFC Investor Presentations' },
-    { dir: path.join(EXTRACTED_DIR, 'CIFC', 'Transcripts'), category: 'CIFC Earnings Transcripts' },
-  ];
-
-  for (const { dir, category } of categories) {
-    if (!fs.existsSync(dir)) {
-      console.log(`\nSkipping missing folder: ${dir}`);
-      continue;
-    }
+  for (const { path: docPath, category } of LAMF_DOCUMENTS) {
     console.log(`\nCategory: ${category}`);
-    const chunks = await walkPdfs(dir, category, COMPANY);
-    allChunks.push(...chunks);
+    try {
+      const chunks = await ingestDocx(docPath, category);
+      allChunks.push(...chunks);
+    } catch (err) {
+      console.warn(`  Skipped ${docPath}: ${err.message}`);
+    }
   }
 
   const index = {
@@ -110,9 +119,9 @@ async function ingest() {
   fs.mkdirSync(path.dirname(INDEX_PATH), { recursive: true });
   fs.writeFileSync(INDEX_PATH, JSON.stringify(index, null, 2));
 
-  console.log(`\nDone! Indexed ${allChunks.length} CIFC chunks -> ${INDEX_PATH}`);
+  console.log(`\nDone! Indexed ${allChunks.length} LAMF chunks -> ${INDEX_PATH}`);
 
-  console.log('\nBuilding CIFC catalog...');
+  console.log('\nBuilding LAMF catalog...');
   execSync('node server/build-catalogs.js', { cwd: ROOT, stdio: 'inherit' });
 
   if (process.env.SKIP_EMBED === '1') {

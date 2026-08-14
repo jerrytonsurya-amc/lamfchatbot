@@ -1,1 +1,1 @@
-export const COMPANY = 'CIFC';
+export const COMPANY = 'LAMF';

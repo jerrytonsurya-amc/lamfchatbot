@@ -6,7 +6,7 @@
     "api/chat.js": {
       "maxDuration": 300,
       "memory": 4096,
-      "includeFiles": "data/catalogs/cifc/**"
+      "includeFiles": "data/catalogs/lamf/**"
     },
     "api/health.js": {
       "memory": 512

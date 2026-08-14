@@ -9,7 +9,7 @@ const INDEX_PATH = path.join(ROOT, 'data', 'knowledge-index.json');
 const CATALOG_DIR = path.join(ROOT, 'data', 'catalogs');
 
 function getChunkCompany(chunk) {
-  return chunk.company || (chunk.category.startsWith('CIFC') ? 'CIFC' : 'Coforge');
+  return chunk.company || COMPANY;
 }
 
 function extractTerms(text, maxTerms = 60) {
@@ -44,15 +44,15 @@ function buildCatalogFromChunks(chunks) {
 
 function writeMonolithicCatalog(chunks) {
   const catalog = buildCatalogFromChunks(chunks);
-  const outPath = path.join(CATALOG_DIR, 'cifc.json');
+  const outPath = path.join(CATALOG_DIR, 'lamf.json');
   fs.writeFileSync(outPath, JSON.stringify(catalog));
   const sizeMb = (fs.statSync(outPath).size / 1024 / 1024).toFixed(2);
-  console.log(`CIFC monolith: ${catalog.length} docs -> ${outPath} (${sizeMb} MB)`);
+  console.log(`LAMF monolith: ${catalog.length} docs -> ${outPath} (${sizeMb} MB)`);
 }
 
 function writeSplitCatalog(chunks) {
   const catalog = buildCatalogFromChunks(chunks);
-  const companyDir = path.join(CATALOG_DIR, 'cifc');
+  const companyDir = path.join(CATALOG_DIR, 'lamf');
   const docsDir = path.join(companyDir, 'docs');
   fs.mkdirSync(docsDir, { recursive: true });
 
@@ -111,29 +111,29 @@ function writeSplitCatalog(chunks) {
     1024
   ).toFixed(2);
 
-  console.log(`CIFC split: ${indexDocs.length} docs, index ${indexKb} KB, doc files ${docsMb} MB -> ${companyDir}`);
+  console.log(`LAMF split: ${indexDocs.length} docs, index ${indexKb} KB, doc files ${docsMb} MB -> ${companyDir}`);
 }
 
 function hasCommittedCatalogs() {
-  return fs.existsSync(path.join(CATALOG_DIR, 'cifc', 'index.json'));
+  return fs.existsSync(path.join(CATALOG_DIR, 'lamf', 'index.json'));
 }
 
 function buildCatalogs() {
   if (!fs.existsSync(INDEX_PATH)) {
     if (hasCommittedCatalogs()) {
-      console.log('Knowledge index not found — using committed CIFC split catalog.');
+      console.log('Knowledge index not found — using committed LAMF split catalog.');
       return;
     }
     throw new Error(`Missing ${INDEX_PATH}. Run: npm run ingest:fast`);
   }
 
-  console.log('Building CIFC catalog...\n');
+  console.log('Building LAMF catalog...\n');
   const index = JSON.parse(fs.readFileSync(INDEX_PATH, 'utf-8'));
-  const cifcChunks = index.chunks.filter((chunk) => getChunkCompany(chunk) === COMPANY);
+  const lamfChunks = index.chunks.filter((chunk) => getChunkCompany(chunk) === COMPANY);
 
   fs.mkdirSync(CATALOG_DIR, { recursive: true });
-  writeSplitCatalog(cifcChunks);
-  writeMonolithicCatalog(cifcChunks);
+  writeSplitCatalog(lamfChunks);
+  writeMonolithicCatalog(lamfChunks);
   console.log('\nDone.');
 }
 

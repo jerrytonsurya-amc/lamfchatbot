@@ -3,7 +3,7 @@
 }
 
 .message.user {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(15, 23, 42, 0.03);
 }
 
 .message.assistant {
@@ -54,11 +54,12 @@
 }
 
 .message.user .message-content p {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   padding: 14px 18px;
   margin: 0;
+  box-shadow: var(--shadow-md);
 }
 
 .message-content p {
@@ -80,7 +81,7 @@
 }
 
 .message-content strong {
-  color: #fff;
+  color: var(--text);
   font-weight: 600;
 }
 
@@ -131,7 +132,7 @@
 }
 
 .message-content tr:nth-child(even) td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(15, 23, 42, 0.03);
 }
 
 .message-content h3,

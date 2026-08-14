@@ -9,9 +9,20 @@ import {
   deleteThread,
   addMessage,
 } from './lib/firebase';
+import {
+  getLocalThreads,
+  createLocalThread,
+  updateLocalThreadTitle,
+  deleteLocalThread,
+  getLocalMessages,
+  addLocalMessage,
+  withTimeout,
+} from './lib/localChat';
 import { sendChatMessage } from './lib/api';
-import { detectCoforgeQuestion, getOutOfScopeMessage } from '../shared/companyGuard.js';
+import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../shared/companyGuard.js';
 import './App.css';
+
+const FIRESTORE_TIMEOUT_MS = 3000;
 
 function generateTitle(message) {
   const trimmed = message.trim();
@@ -24,76 +35,244 @@ export default function App() {
   const [activeThreadId, setActiveThreadId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [useLocalOnly, setUseLocalOnly] = useState(false);
+  const [storageNotice, setStorageNotice] = useState('');
 
   useEffect(() => {
-    const unsub = subscribeToThreads(setThreads);
+    if (useLocalOnly) {
+      setThreads(getLocalThreads());
+      return undefined;
+    }
+
+    const unsub = subscribeToThreads(
+      (nextThreads) => {
+        setThreads(nextThreads);
+        setStorageNotice('');
+      },
+      (err) => {
+        console.warn('Firestore unavailable, using local chat storage:', err);
+        setUseLocalOnly(true);
+        setThreads(getLocalThreads());
+        setStorageNotice(
+          err?.code === 'permission-denied'
+            ? 'Firestore rules are blocking access. In Firebase Console → Firestore → Rules, publish the rules from firestore.rules in this project, then refresh.'
+            : 'Chat history is saved locally. Enable Firestore in Firebase to sync across devices.'
+        );
+      }
+    );
+
     return unsub;
-  }, []);
+  }, [useLocalOnly]);
 
   useEffect(() => {
     if (!activeThreadId) {
       setMessages([]);
-      return;
+      return undefined;
     }
-    const unsub = subscribeToMessages(activeThreadId, setMessages);
+
+    if (useLocalOnly) {
+      setMessages(getLocalMessages(activeThreadId));
+      return undefined;
+    }
+
+    const unsub = subscribeToMessages(
+      activeThreadId,
+      setMessages,
+      (err) => {
+        console.warn('Firestore messages unavailable, using local chat storage:', err);
+        setUseLocalOnly(true);
+        setMessages(getLocalMessages(activeThreadId));
+        setStorageNotice(
+          err?.code === 'permission-denied'
+            ? 'Firestore rules are blocking access. In Firebase Console → Firestore → Rules, publish the rules from firestore.rules in this project, then refresh.'
+            : 'Chat history is saved locally. Enable Firestore in Firebase to sync across devices.'
+        );
+      }
+    );
+
     return unsub;
+  }, [activeThreadId, useLocalOnly]);
+
+  const refreshLocalState = useCallback((threadId = activeThreadId) => {
+    setThreads(getLocalThreads());
+    if (threadId) {
+      setMessages(getLocalMessages(threadId));
+    }
   }, [activeThreadId]);
 
   const handleNewChat = useCallback(async () => {
-    const id = await createThread('New chat');
-    setActiveThreadId(id);
-  }, []);
+    if (useLocalOnly) {
+      const id = createLocalThread('New chat');
+      setActiveThreadId(id);
+      refreshLocalState(id);
+      return;
+    }
+
+    try {
+      const id = await withTimeout(createThread('New chat'), FIRESTORE_TIMEOUT_MS, 'Create chat');
+      setActiveThreadId(id);
+    } catch (err) {
+      console.warn('Firestore create failed, switching to local storage:', err);
+      setUseLocalOnly(true);
+      const id = createLocalThread('New chat');
+      setActiveThreadId(id);
+      refreshLocalState(id);
+      setStorageNotice(
+        'Firestore is not available. Chat works locally — enable Firestore in Firebase for cloud sync.'
+      );
+    }
+  }, [useLocalOnly, refreshLocalState]);
 
   const handleSelectThread = useCallback((id) => {
     setActiveThreadId(id);
   }, []);
 
-  const handleDeleteThread = useCallback(async (id) => {
-    await deleteThread(id);
-    if (activeThreadId === id) {
-      setActiveThreadId(null);
-    }
-  }, [activeThreadId]);
+  const handleDeleteThread = useCallback(
+    async (id) => {
+      if (useLocalOnly) {
+        deleteLocalThread(id);
+        refreshLocalState();
+        if (activeThreadId === id) {
+          setActiveThreadId(null);
+        }
+        return;
+      }
 
-  const handleSend = useCallback(async (text) => {
-    let threadId = activeThreadId;
+      try {
+        await withTimeout(deleteThread(id), FIRESTORE_TIMEOUT_MS, 'Delete chat');
+        if (activeThreadId === id) {
+          setActiveThreadId(null);
+        }
+      } catch (err) {
+        console.warn('Firestore delete failed:', err);
+        setUseLocalOnly(true);
+        deleteLocalThread(id);
+        refreshLocalState();
+        if (activeThreadId === id) {
+          setActiveThreadId(null);
+        }
+      }
+    },
+    [activeThreadId, useLocalOnly, refreshLocalState]
+  );
 
-    if (!threadId) {
-      threadId = await createThread(generateTitle(text));
-      setActiveThreadId(threadId);
-    } else if (messages.length === 0) {
-      await updateThreadTitle(threadId, generateTitle(text));
-    }
+  const handleSend = useCallback(
+    async (text) => {
+      setIsLoading(true);
 
-    await addMessage(threadId, 'user', text);
+      let threadId = activeThreadId;
+      const trimmed = text.trim();
+      const title = generateTitle(trimmed);
 
-    if (detectCoforgeQuestion(text.trim())) {
-      await addMessage(threadId, 'assistant', getOutOfScopeMessage(), []);
-      return;
-    }
+      const persistUserMessage = async (id) => {
+        if (useLocalOnly) {
+          addLocalMessage(id, 'user', trimmed);
+          refreshLocalState(id);
+          return;
+        }
 
-    setIsLoading(true);
+        try {
+          await withTimeout(addMessage(id, 'user', trimmed), FIRESTORE_TIMEOUT_MS, 'Save message');
+        } catch (err) {
+          console.warn('Firestore save failed, switching to local storage:', err);
+          setUseLocalOnly(true);
+          addLocalMessage(id, 'user', trimmed);
+          refreshLocalState(id);
+          setStorageNotice(
+            'Firestore is not available. Chat works locally — enable Firestore in Firebase for cloud sync.'
+          );
+        }
+      };
 
-    try {
-      const history = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const persistAssistantMessage = async (id, answer, sources) => {
+        if (useLocalOnly) {
+          addLocalMessage(id, 'assistant', answer, sources);
+          refreshLocalState(id);
+          return;
+        }
 
-      const { answer, sources } = await sendChatMessage(text, history);
-      await addMessage(threadId, 'assistant', answer, sources || []);
-    } catch (err) {
-      await addMessage(
-        threadId,
-        'assistant',
-        err.message?.includes('rate-limited')
+        try {
+          await withTimeout(addMessage(id, 'assistant', answer, sources), FIRESTORE_TIMEOUT_MS, 'Save reply');
+        } catch (err) {
+          console.warn('Firestore save failed:', err);
+          setUseLocalOnly(true);
+          addLocalMessage(id, 'assistant', answer, sources);
+          refreshLocalState(id);
+        }
+      };
+
+      try {
+        if (!threadId) {
+          if (useLocalOnly) {
+            threadId = createLocalThread(title);
+          } else {
+            try {
+              threadId = await withTimeout(createThread(title), FIRESTORE_TIMEOUT_MS, 'Create chat');
+            } catch (err) {
+              console.warn('Firestore create failed, switching to local storage:', err);
+              setUseLocalOnly(true);
+              threadId = createLocalThread(title);
+              setStorageNotice(
+                'Firestore is not available. Chat works locally — enable Firestore in Firebase for cloud sync.'
+              );
+            }
+          }
+          setActiveThreadId(threadId);
+          refreshLocalState(threadId);
+        } else if (messages.length === 0) {
+          if (useLocalOnly) {
+            updateLocalThreadTitle(threadId, title);
+            refreshLocalState(threadId);
+          } else {
+            try {
+              await withTimeout(updateThreadTitle(threadId, title), FIRESTORE_TIMEOUT_MS, 'Update title');
+            } catch {
+              setUseLocalOnly(true);
+              updateLocalThreadTitle(threadId, title);
+              refreshLocalState(threadId);
+            }
+          }
+        }
+
+        await persistUserMessage(threadId);
+
+        if (detectOutOfScopeQuestion(trimmed)) {
+          await persistAssistantMessage(threadId, getOutOfScopeMessage(), []);
+          return;
+        }
+
+        const history = messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+        const { answer, sources } = await sendChatMessage(trimmed, history);
+        await persistAssistantMessage(threadId, answer, sources || []);
+      } catch (err) {
+        const errorText = err.message?.includes('rate-limited')
           ? '⏳ The AI service is temporarily busy due to rate limits. Please wait about a minute and try again.'
-          : `Sorry, I encountered an error: ${err.message}. Please try again.`
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeThreadId, messages]);
+          : `Sorry, I encountered an error: ${err.message}. Please try again.`;
+
+        if (threadId) {
+          if (useLocalOnly) {
+            addLocalMessage(threadId, 'assistant', errorText);
+            refreshLocalState(threadId);
+          } else {
+            try {
+              await addMessage(threadId, 'assistant', errorText);
+            } catch {
+              setUseLocalOnly(true);
+              addLocalMessage(threadId, 'assistant', errorText);
+              refreshLocalState(threadId);
+            }
+          }
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [activeThreadId, messages, useLocalOnly, refreshLocalState]
+  );
 
   return (
     <div className="app">
@@ -109,6 +288,7 @@ export default function App() {
         isLoading={isLoading}
         onSend={handleSend}
         disabled={false}
+        notice={storageNotice}
       />
     </div>
   );

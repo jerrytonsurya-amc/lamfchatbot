@@ -28,7 +28,7 @@ export default function ChartModal({ chartData, onClose }) {
     });
 
     const link = document.createElement('a');
-    link.download = `cifc-chart-${Date.now()}.png`;
+    link.download = `lamf-chart-${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
@@ -60,14 +60,14 @@ export default function ChartModal({ chartData, onClose }) {
           <ResponsiveContainer width="100%" height={360}>
             {chartData.multiSeries ? (
               <BarChart data={data} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" tick={{ fill: '#aaa', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#aaa', fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip
-                  contentStyle={{ background: '#2a2a2a', border: '1px solid #444', borderRadius: 8 }}
-                  labelStyle={{ color: '#fff' }}
+                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}
+                  labelStyle={{ color: '#0f172a' }}
                 />
-                <Legend wrapperStyle={{ color: '#aaa', fontSize: 12 }} />
+                <Legend wrapperStyle={{ color: '#64748b', fontSize: 12 }} />
                 {chartData.series.map((s, i) => (
                   <Bar
                     key={s.key}
@@ -80,12 +80,12 @@ export default function ChartModal({ chartData, onClose }) {
               </BarChart>
             ) : useLineChart ? (
               <LineChart data={data} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" tick={{ fill: '#aaa', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#aaa', fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip
-                  contentStyle={{ background: '#2a2a2a', border: '1px solid #444', borderRadius: 8 }}
-                  labelStyle={{ color: '#fff' }}
+                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}
+                  labelStyle={{ color: '#0f172a' }}
                 />
                 <Line
                   type="monotone"
@@ -98,12 +98,12 @@ export default function ChartModal({ chartData, onClose }) {
               </LineChart>
             ) : (
               <BarChart data={data} margin={{ top: 16, right: 24, left: 8, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" tick={{ fill: '#aaa', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#aaa', fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
                 <Tooltip
-                  contentStyle={{ background: '#2a2a2a', border: '1px solid #444', borderRadius: 8 }}
-                  labelStyle={{ color: '#fff' }}
+                  contentStyle={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 8 }}
+                  labelStyle={{ color: '#0f172a' }}
                 />
                 <Bar dataKey="value" fill="#19c37d" radius={[4, 4, 0, 0]} name={chartData.valueKey} />
               </BarChart>

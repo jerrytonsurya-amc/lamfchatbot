@@ -9,11 +9,11 @@ export default function Sidebar({ threads, activeThreadId, onSelectThread, onNew
       <div className="sidebar-brand">
         <div className="brand-mark">
           <div className="brand-icon" aria-hidden="true">
-            C
+            S
           </div>
           <div className="brand-text">
-            <span className="brand-name">Chola</span>
-            <span className="brand-tagline">CIFC Knowledge Assistant</span>
+            <span className="brand-name">Shriram Credit</span>
+            <span className="brand-tagline">LAMF AI Assistant</span>
           </div>
         </div>
       </div>
@@ -28,7 +28,7 @@ export default function Sidebar({ threads, activeThreadId, onSelectThread, onNew
 
       <div className="thread-list">
         {threads.length === 0 ? (
-          <p className="thread-list-empty">Start a new chat to explore CIFC reports and transcripts.</p>
+          <p className="thread-list-empty">Start a new chat to explore LAMF FAQs and program details.</p>
         ) : null}
         {threads.map((thread) => (
           <div
@@ -58,7 +58,7 @@ export default function Sidebar({ threads, activeThreadId, onSelectThread, onNew
         ))}
       </div>
 
-      <div className="sidebar-footer">Full-library research · 26 CIFC documents</div>
+      <div className="sidebar-footer">Full-library research · 3 LAMF documents</div>
     </aside>
   );
 }

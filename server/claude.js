@@ -1,29 +1,28 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { config } from './config.js';
 
-let client = null;
+let genAI = null;
 
 function getClient() {
-  if (!client) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) throw new Error('ANTHROPIC_API_KEY is not configured');
-    client = new Anthropic({
-      apiKey,
-      timeout: process.env.VERCEL === '1' ? 45000 : 120000,
-    });
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('GEMINI_API_KEY is not configured');
+    genAI = new GoogleGenerativeAI(apiKey);
   }
-  return client;
+  return genAI;
 }
 
 export async function generateText(prompt, options = {}) {
-  const response = await getClient().messages.create({
+  const model = getClient().getGenerativeModel({
     model: options.model || config.chatModel,
-    max_tokens: options.maxTokens || 4096,
-    messages: [{ role: 'user', content: prompt }],
   });
 
-  return response.content
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text)
-    .join('');
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      maxOutputTokens: options.maxTokens || 4096,
+    },
+  });
+
+  return result.response.text();
 }

@@ -1,7 +1,7 @@
 .chart-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,7 +39,7 @@
 .chart-modal-close {
   background: none;
   border: none;
-  color: #888;
+  color: var(--text-muted);
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
@@ -47,7 +47,7 @@
 }
 
 .chart-modal-close:hover {
-  color: #fff;
+  color: var(--text);
 }
 
 .chart-modal-body {
@@ -103,7 +103,7 @@
 
 .view-chart-btn:hover {
   background: var(--bg-hover);
-  border-color: rgba(229, 160, 25, 0.35);
+  border-color: rgba(212, 146, 10, 0.35);
   color: var(--text);
 }
 

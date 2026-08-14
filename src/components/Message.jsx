@@ -15,7 +15,7 @@ export default function Message({ role, content, sources, isLoading }) {
   return (
     <div className={`message ${role}`}>
       <div className="message-inner">
-        <div className="message-avatar">{isUser ? 'U' : 'Ch'}</div>
+        <div className="message-avatar">{isUser ? 'U' : 'AI'}</div>
         <div className="message-content">
             {isLoading ? (
             <div className="typing-indicator-wrap">

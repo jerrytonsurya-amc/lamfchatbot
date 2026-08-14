@@ -29,29 +29,41 @@ export const db = getFirestore(app);
 
 const THREADS = 'threads';
 
-export function subscribeToThreads(callback) {
+export function subscribeToThreads(callback, onError) {
   const q = query(collection(db, THREADS), orderBy('updatedAt', 'desc'));
-  return onSnapshot(q, (snapshot) => {
-    const threads = snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }));
-    callback(threads);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const threads = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+      callback(threads);
+    },
+    (error) => {
+      onError?.(error);
+    }
+  );
 }
 
-export function subscribeToMessages(threadId, callback) {
+export function subscribeToMessages(threadId, callback, onError) {
   const q = query(
     collection(db, THREADS, threadId, 'messages'),
     orderBy('createdAt', 'asc')
   );
-  return onSnapshot(q, (snapshot) => {
-    const messages = snapshot.docs.map((d) => ({
-      id: d.id,
-      ...d.data(),
-    }));
-    callback(messages);
-  });
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const messages = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }));
+      callback(messages);
+    },
+    (error) => {
+      onError?.(error);
+    }
+  );
 }
 
 export async function createThread(title = 'New chat') {

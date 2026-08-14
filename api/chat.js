@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       currentDateTime
     );
 
-    console.log(`[chat] CIFC answered in ${Date.now() - started}ms`);
+    console.log(`[chat] LAMF answered in ${Date.now() - started}ms`);
     return res.status(200).json({ answer, sources, runtime: process.env.VERCEL === '1' ? 'vercel' : 'local' });
   } catch (err) {
     console.error(`[chat] failed after ${Date.now() - started}ms:`, err);

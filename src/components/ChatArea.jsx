@@ -10,7 +10,7 @@ function resizeTextarea(textarea) {
   textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
 }
 
-export default function ChatArea({ messages, isLoading, onSend, disabled }) {
+export default function ChatArea({ messages, isLoading, onSend, disabled, notice = '' }) {
   const config = getCompanyConfig();
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
@@ -82,14 +82,16 @@ export default function ChatArea({ messages, isLoading, onSend, disabled }) {
         <div className="chat-header-title">{config.title}</div>
         <div className="chat-header-badge">
           <span className="chat-header-badge-dot" aria-hidden="true" />
-          Full library · 26 documents searched per answer
+          Full library · 3 documents searched per answer
         </div>
       </div>
+
+      {notice ? <div className="chat-notice">{notice}</div> : null}
 
       <div className="messages-container">
         {!hasMessages ? (
           <div className="welcome-screen">
-            <div className="welcome-badge">Cholamandalam Investment & Finance</div>
+            <div className="welcome-badge">Shriram Credit LAMF AI Assistant</div>
             <h1>How can I help you today?</h1>
             <p>{config.welcome}</p>
             <div className="suggestions">

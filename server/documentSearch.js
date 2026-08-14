@@ -11,12 +11,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const INDEX_PATH = path.join(__dirname, '..', 'data', 'knowledge-index.json');
 const CATALOG_DIR = path.join(__dirname, '..', 'data', 'catalogs');
 
+const LAMF_CATEGORIES = [
+  'LAMF Customer FAQs',
+  'LAMF Voicebot Knowledge Base',
+  'LAMF Program Document',
+];
+
 function getCatalogPath() {
-  return path.join(CATALOG_DIR, 'cifc.json');
+  return path.join(CATALOG_DIR, 'lamf.json');
 }
 
 function getSplitCatalogDir() {
-  return path.join(CATALOG_DIR, 'cifc');
+  return path.join(CATALOG_DIR, 'lamf');
 }
 
 function hasSplitCatalog() {
@@ -24,23 +30,20 @@ function hasSplitCatalog() {
 }
 
 function getChunkCompany(chunk) {
-  return chunk.company || (chunk.category.startsWith('CIFC') ? 'CIFC' : 'Coforge');
+  return chunk.company || COMPANY;
 }
 
 const QUERY_EXPANSIONS = {
-  revenue: ['revenue', 'income', 'topline', 'sales', 'turnover', 'operations'],
-  margin: ['margin', 'ebitda', 'operating', 'profitability', 'profit'],
-  acquisition: ['acquisition', 'acquire', 'encora', 'merger', 'deal'],
-  dividend: ['dividend', 'payout', 'shareholder', 'interim', 'final'],
-  equity: ['equity', 'eps', 'share', 'stock', 'roe', 'capital', 'esop'],
-  sector: ['vertical', 'bfs', 'bfsi', 'banking', 'insurance', 'travel', 'sector', 'industry', 'tth'],
-  growth: ['growth', 'yoy', 'increase', 'cagr', 'expansion'],
-  earnings: ['earnings', 'transcript', 'call', 'quarter', 'q1', 'q2', 'q3', 'q4', 'fy'],
-  client: ['client', 'customer', 'deal', 'wins', 'pipeline'],
-  guidance: ['guidance', 'outlook', 'forecast', 'target'],
-  vehicle: ['vehicle', 'vehicles', 'auto', 'commercial', 'passenger', 'cv', 'pv'],
-  aum: ['aum', 'assets under management', 'book size', 'loan book', 'portfolio'],
-  segment: ['segment', 'vertical', 'business mix', 'product mix'],
+  lamf: ['lamf', 'loan against mutual fund', 'mutual fund', 'mf units', 'pledge'],
+  eligibility: ['eligibility', 'eligible', 'qualify', 'criteria', 'requirement'],
+  disbursement: ['disbursement', 'disburse', 'withdrawal', 'utilisation', 'withdraw'],
+  interest: ['interest', 'rate', 'roi', 'charges', 'fee', 'processing'],
+  repayment: ['repayment', 'repay', 'closure', 'foreclosure', 'outstanding'],
+  pledge: ['pledge', 'pledged', 'collateral', 'security', 'lien'],
+  process: ['process', 'application', 'journey', 'steps', 'onboarding'],
+  voicebot: ['voicebot', 'script', 'calling', 'call', 'assistant'],
+  faq: ['faq', 'question', 'answer', 'customer'],
+  sccl: ['sccl', 'shriram', 'shriram credit'],
 };
 
 let cachedIndex = null;
@@ -114,7 +117,7 @@ function scoreChunk(chunk, queryTokens, targetCompany = null) {
   const queryStr = queryTokens.join(' ');
   if (chunk.text?.toLowerCase().includes(queryStr)) score += 8;
 
-  const company = chunk.company || (chunk.category?.startsWith('CIFC') ? 'CIFC' : 'Coforge');
+  const company = chunk.company || COMPANY;
   if (targetCompany === company) score += 12;
   if (targetCompany && targetCompany !== company) score = Math.max(0, score - 8);
 
@@ -122,26 +125,27 @@ function scoreChunk(chunk, queryTokens, targetCompany = null) {
 }
 
 function loadSearchIndex() {
-  const cacheKey = 'index:CIFC';
+  const cacheKey = `index:${COMPANY}`;
 
   if (searchIndexCache.has(cacheKey)) {
     return searchIndexCache.get(cacheKey);
   }
 
-  if (globalThis.__searchIndex_CIFC) {
-    searchIndexCache.set(cacheKey, globalThis.__searchIndex_CIFC);
-    return globalThis.__searchIndex_CIFC;
+  const globalKey = `__searchIndex_${COMPANY}`;
+  if (globalThis[globalKey]) {
+    searchIndexCache.set(cacheKey, globalThis[globalKey]);
+    return globalThis[globalKey];
   }
 
   const indexPath = path.join(getSplitCatalogDir(), 'index.json');
   const index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
   searchIndexCache.set(cacheKey, index);
-  globalThis.__searchIndex_CIFC = index;
+  globalThis[globalKey] = index;
   return index;
 }
 
 function loadDocumentFile(fileName) {
-  const cacheKey = `CIFC/${fileName}`;
+  const cacheKey = `${COMPANY}/${fileName}`;
 
   if (documentFileCache.has(cacheKey)) {
     return documentFileCache.get(cacheKey);
@@ -193,7 +197,7 @@ function scoreDocMeta(docMeta, queryTokens, targetCompany = null) {
     }
   }
 
-  const company = docMeta.company || (docMeta.category.startsWith('CIFC') ? 'CIFC' : 'Coforge');
+  const company = docMeta.company || COMPANY;
   if (targetCompany === company) {
     maxScore += 12;
     totalScore += 12;
@@ -299,7 +303,7 @@ export function buildDocumentCatalog() {
 }
 
 function loadCompanyCatalog(company) {
-  const normalized = company === 'CIFC' ? 'CIFC' : 'Coforge';
+  const normalized = COMPANY;
   const cacheKey = `__catalog_${normalized}`;
 
   if (globalThis[cacheKey]) {
@@ -453,10 +457,7 @@ function limitDocumentsForRuntime(documents, company) {
     return documents;
   }
 
-  const categories =
-    company === 'CIFC'
-      ? ['CIFC Annual Reports', 'CIFC Investor Presentations', 'CIFC Earnings Transcripts']
-      : ['Annual Reports', 'Investor Presentations', 'Earnings Transcripts'];
+  const categories = LAMF_CATEGORIES;
 
   const picked = [];
   const used = new Set();
@@ -523,7 +524,7 @@ function parseDocumentSelection(text, maxId) {
 }
 
 function getDocCompany(doc) {
-  return doc.company || doc.chunks[0]?.company || (doc.category.startsWith('CIFC') ? 'CIFC' : 'Coforge');
+  return doc.company || doc.chunks[0]?.company || COMPANY;
 }
 
 function filterDocsByCompany(scoredDocs, targetCompany) {
@@ -537,19 +538,7 @@ function fallbackDocumentSelection(scoredDocs, limit, targetCompany = null) {
   const usedKeys = new Set();
   const categoriesSeen = new Set();
 
-  const categories =
-    targetCompany === 'CIFC'
-      ? ['CIFC Annual Reports', 'CIFC Investor Presentations', 'CIFC Earnings Transcripts']
-      : targetCompany === 'Coforge'
-        ? ['Annual Reports', 'Investor Presentations', 'Earnings Transcripts']
-        : [
-            'Annual Reports',
-            'Investor Presentations',
-            'Earnings Transcripts',
-            'CIFC Annual Reports',
-            'CIFC Investor Presentations',
-            'CIFC Earnings Transcripts',
-          ];
+  const categories = LAMF_CATEGORIES;
 
   const addDoc = (doc) => {
     const key = `${doc.source}::${doc.category}`;
@@ -593,11 +582,9 @@ async function selectDocumentsWithAI(query, scoredDocs, limit, targetCompany = n
     )
     .join('\n\n');
 
-  const companyNote = targetCompany
-    ? `Only select documents for ${targetCompany === 'CIFC' ? 'Cholamandalam (CIFC)' : 'Coforge'}.`
-    : 'Select documents for the company referenced in the question (Coforge or CIFC/Cholamandalam).';
+  const companyNote = 'Only select documents for Shriram Credit LAMF (Loan Against Mutual Funds).';
 
-  const prompt = `You are a research assistant for Coforge Limited and Cholamandalam Investment and Finance Company (CIFC).
+  const prompt = `You are a research assistant for Shriram Credit Company Limited's LAMF (Loan Against Mutual Funds) program.
 
 QUESTION: ${query}
 ${companyNote}
@@ -605,9 +592,9 @@ ${companyNote}
 Below is the document library (${shortlist.length} files). Select every document that may contain facts needed to answer the question well.
 
 Document types:
-- Annual Reports: audited financials, share capital, dividends, vertical mix
-- Investor Presentations: strategy, growth, sector highlights
-- Earnings Transcripts: quarterly results, management commentary, guidance
+- LAMF Customer FAQs: common customer questions and simple answers
+- LAMF Voicebot Knowledge Base: calling scripts, stage-wise flows, and voicebot controls
+- LAMF Program Document: program rules, eligibility, process, and policy details
 
 DOCUMENT LIBRARY:
 ${catalogText}
