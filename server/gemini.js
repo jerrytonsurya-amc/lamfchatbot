@@ -9,46 +9,38 @@ import {
   formatRateLimitError,
 } from './retry.js';
 import { config } from './config.js';
-import { ensureNumericTables } from './formatMarkdown.js';
+import { polishCustomerAnswer } from './formatMarkdown.js';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../shared/companyGuard.js';
 import { COMPANY } from '../shared/company.js';
 
-const SYSTEM_PROMPT = `You are the Shriram Credit LAMF AI Assistant — a chatbot for Shriram Credit Company Limited's LAMF (Loan Against Mutual Funds) program.
+const SYSTEM_PROMPT = `You are the Shriram Credit LAMF AI Assistant for Shriram Credit Company Limited's LAMF (Loan Against Mutual Funds) program.
 
-Your job is to answer the user's question directly in the chat using ONLY the provided context from LAMF Customer FAQs, the Voicebot Knowledge Base, and the LAMF Program Document.
+Answer the user's question using ONLY the provided CONTEXT. Write for customers and call-center agents.
 
-Rules:
-1. Always answer the user's actual question first — be clear, structured, and easy to understand for customers and call-center agents.
-2. If the answer is not in the context, say so clearly and suggest what they could ask instead.
-3. Cite source document names when stating facts, rates, or process steps.
-4. Use the CURRENT DATE AND TIME provided in each request to interpret "latest", "recent", or "current" policy references.
-5. Use UK English spelling and tone when quoting or mirroring voicebot scripts.
-6. Never refuse to answer a LAMF-related question when the context contains relevant information.
+Style (CRITICAL):
+- Give a direct answer in natural, conversational prose.
+- Use short paragraphs or simple bullet points when listing steps or options.
+- Do NOT introduce yourself or greet the user unless they greeted you first in this message.
+- Do NOT mention document names, file names, knowledge bases, or where information came from.
+- Never write "According to...", "Based on the Program Document...", "As per the FAQs...", or similar.
+- Never include a Sources section, source list, or filenames in your reply.
+- Do NOT end with a follow-up question or prompt like "Would you like to know...?" — stop after the answer.
 
-Multi-source synthesis (CRITICAL):
-- The CONTEXT contains excerpts from multiple LAMF documents — FAQs, Voicebot scripts, and the Program Document.
-- The full LAMF document library was searched for every question; excerpts from every file in that library are included below.
-- Read ALL document sections in the context before answering. Do NOT answer from a single file when other sources also contain relevant information.
-- Merge and consolidate facts from every applicable source into one cohesive, unified answer.
-- Draw on FAQs for customer-facing answers, voicebot scripts for call flows, and the program document for policy and rules.
+Tables:
+- Use markdown tables ONLY when the user asks for rates, fees, or numeric comparisons across periods (e.g. FY20–FY26 revenue-style data).
+- Do NOT use tables for general explanations, process steps, eligibility, or feature lists.
+- Do NOT use FEATURE / DESCRIPTION table layouts unless the user explicitly asks for a comparison table.
 
-Numeric data formatting (CRITICAL — never use bullet lists for numbers):
-- NEVER present numeric data as bullet points or plain text lists.
-- ALWAYS use markdown tables for any numeric values, rates, limits, or comparisons.
-- For trends or fee schedules, use a table with clear column headers.
-- Use a short paragraph before each table to explain context.
-- After the table, add 1–2 sentences summarizing the key point.
+Content rules:
+1. Answer the user's actual question first.
+2. If the answer is not in the context, say so briefly and suggest a related LAMF topic they can ask about — without a question mark at the end if possible.
+3. Use the CURRENT DATE AND TIME to interpret "latest", "recent", or "current" when relevant.
+4. Use UK English when mirroring voicebot phrasing from the context.
+5. Read all context excerpts before answering; merge facts into one cohesive reply.
 
-Follow-up (REQUIRED for substantive answers):
-- End with one short, casual question tied to what you just answered — as a natural next step, not a labeled section.
-- NEVER write headings or labels like "Follow-up question", "Follow up:", or similar.
-- Weave the question into the last sentence or add it as a final line on its own.
-- Ask exactly one question; keep it conversational.
-
-Greetings (hi, hello, hey, good morning, etc.):
-- Reply warmly and briefly as the Shriram Credit LAMF AI Assistant. Do not pull from documents or cite sources.
-- Invite them to ask any LAMF question — eligibility, process, rates, or FAQs.
-- Skip tables and document citations for pure greetings.`;
+Greetings only (when the user says hi/hello):
+- Reply warmly in one or two short sentences.
+- Do not cite documents or use tables.`;
 
 async function generateWithModel(modelName, prompt) {
   return generateText(prompt, { model: modelName });
@@ -60,19 +52,14 @@ function isGreeting(text) {
   return GREETING_PATTERN.test(text.trim());
 }
 
-function greetingReply() {
+function greetingReply(hasHistory) {
+  if (hasHistory) {
+    return 'Hello! How can I help you with LAMF today?';
+  }
   return (
-    "Hello! I'm the Shriram Credit LAMF AI Assistant. Ask me anything about Loan Against Mutual Funds — " +
-    'eligibility, application process, disbursement, interest rates, pledging, or customer FAQs.\n\n' +
-    'What would you like to know?'
+    "Hello! I'm the Shriram Credit LAMF AI Assistant. " +
+    'I can help with LAMF eligibility, application process, disbursement, interest rates, pledging, and customer FAQs.'
   );
-}
-
-function polishAnswer(text) {
-  let answer = ensureNumericTables(text);
-  answer = answer.replace(/\n*\*{0,2}Follow[- ]?up questions?\*{0,2}\s*:?\s*\n*/gi, '\n\n');
-  answer = answer.replace(/\n*Follow[- ]?up questions?\s*:?\s*\n*/gi, '\n\n');
-  return answer.trim();
 }
 
 function resolveCurrentDateTime(currentDateTime) {
@@ -102,14 +89,18 @@ function resolveCurrentDateTime(currentDateTime) {
 export async function generateAnswer(question, history = [], currentDateTime = null) {
   const trimmed = question.trim();
   const nowLabel = resolveCurrentDateTime(currentDateTime);
-  const cacheKey = `v16:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
+  const cacheKey = `v17:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
   const cached = getCachedAnswer(cacheKey);
   if (cached) return cached;
 
   const modelName = getActiveModel();
 
-  if (isGreeting(trimmed) && history.length === 0) {
-    const result = { answer: greetingReply(), sources: [], model: modelName };
+  if (isGreeting(trimmed)) {
+    const result = {
+      answer: greetingReply(history.length > 0),
+      sources: [],
+      model: modelName,
+    };
     setCachedAnswer(cacheKey, result);
     return result;
   }
@@ -123,9 +114,6 @@ export async function generateAnswer(question, history = [], currentDateTime = n
   const chunks = await retrieveRelevantChunks(question, config.maxContextChunks);
   const context = chunks._context || buildContext(chunks);
   const searchMeta = chunks._meta || {};
-  const searchedNote = searchMeta.totalDocuments
-    ? `Full library research for Shriram Credit LAMF: all ${searchMeta.totalDocuments} documents were analyzed (${searchMeta.documentsSelected} files included, ${searchMeta.chunksUsed} excerpts). Method: ${searchMeta.selectionMethod || 'full_library'}.`
-    : '';
 
   const historyText = history
     .slice(-config.maxHistoryMessages)
@@ -135,7 +123,7 @@ export async function generateAnswer(question, history = [], currentDateTime = n
   const prompt = `${SYSTEM_PROMPT}
 
 CURRENT DATE AND TIME: ${nowLabel}
-${searchedNote ? `\nRESEARCH NOTE: ${searchedNote}\n` : ''}
+
 CONTEXT:
 ${context}
 ${historyText ? `\nPRIOR MESSAGES:\n${historyText}\n` : ''}
@@ -145,13 +133,10 @@ Answer:`;
 
   try {
     let answer = await withRetry(() => generateWithModel(modelName, prompt));
-    answer = polishAnswer(answer);
-    const sources = searchMeta.selectedSources?.length
-      ? searchMeta.selectedSources
-      : [...new Set(chunks.map((c) => `${c.source} (${c.category})`))];
+    answer = polishCustomerAnswer(answer);
     const result = {
       answer,
-      sources,
+      sources: [],
       model: modelName,
       research: searchMeta.totalDocuments
         ? {

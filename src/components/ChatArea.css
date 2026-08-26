@@ -55,6 +55,15 @@
   border: 1px solid #fde68a;
 }
 
+.chat-header-compact {
+  padding: 12px 24px;
+}
+
+.chat-header-compact .chat-header-title {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
 .messages-container {
   flex: 1;
   overflow-y: auto;

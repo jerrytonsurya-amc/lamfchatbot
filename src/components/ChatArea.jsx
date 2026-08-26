@@ -78,12 +78,18 @@ export default function ChatArea({ messages, isLoading, onSend, disabled, notice
 
   return (
     <div className="chat-area">
-      <div className="chat-header">
-        <div className="chat-header-title">{config.title}</div>
-        <div className="chat-header-badge">
-          <span className="chat-header-badge-dot" aria-hidden="true" />
-          Full library · 3 documents searched per answer
-        </div>
+      <div className={`chat-header ${hasMessages ? 'chat-header-compact' : ''}`}>
+        {hasMessages ? (
+          <div className="chat-header-title">LAMF Assistant</div>
+        ) : (
+          <>
+            <div className="chat-header-title">{config.title}</div>
+            <div className="chat-header-badge">
+              <span className="chat-header-badge-dot" aria-hidden="true" />
+              Full library · 3 documents searched per answer
+            </div>
+          </>
+        )}
       </div>
 
       {notice ? <div className="chat-notice">{notice}</div> : null}
@@ -115,7 +121,6 @@ export default function ChatArea({ messages, isLoading, onSend, disabled, notice
                 key={msg.id}
                 role={msg.role}
                 content={msg.content}
-                sources={msg.sources}
               />
             ))}
             {isLoading && <Message role="assistant" isLoading />}

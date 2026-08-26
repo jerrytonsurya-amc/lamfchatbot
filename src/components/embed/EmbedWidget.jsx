@@ -3,7 +3,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendEmbedChatMessage } from '../../lib/embedApi';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/companyGuard.js';
-import { ensureNumericTables } from '../../lib/formatMarkdown';
 import './EmbedWidget.css';
 
 const QUICK_PROMPTS = [
@@ -28,9 +27,7 @@ function EmbedBubble({ role, content, isLoading }) {
         ) : isUser ? (
           <p>{content}</p>
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {ensureNumericTables(content)}
-          </ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
         )}
       </div>
     </div>

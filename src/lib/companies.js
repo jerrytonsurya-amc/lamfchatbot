@@ -1,7 +1,7 @@
 export const APP_CONFIG = {
   title: 'Shriram Credit LAMF AI Assistant',
   welcome:
-    'I answer your questions about Loan Against Mutual Funds (LAMF) — eligibility, process, disbursement, interest, pledging, and FAQs.',
+    "Hello! I'm the Shriram Credit LAMF AI Assistant. I answer your questions about Loan Against Mutual Funds — eligibility, process, disbursement, interest, pledging, and FAQs.",
   placeholder: 'Ask your LAMF question — eligibility, process, rates, disbursement...',
   hint: 'Shriram Credit LAMF AI Assistant · answers from FAQs, Voicebot KB, and Program Document',
   suggestions: [
