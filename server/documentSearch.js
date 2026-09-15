@@ -453,7 +453,7 @@ function enforceChunkBudget(chunks, documents, budget) {
 }
 
 function limitDocumentsForRuntime(documents, company) {
-  if (process.env.VERCEL !== '1' || documents.length <= config.vercelMaxDocuments) {
+  if (documents.length <= config.vercelMaxDocuments) {
     return documents;
   }
 
