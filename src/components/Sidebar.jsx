@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BotIcon } from './ChatAvatars';
 import './Sidebar.css';
 
 export default function Sidebar({ threads, activeThreadId, onSelectThread, onNewChat, onDeleteThread }) {
@@ -9,7 +10,7 @@ export default function Sidebar({ threads, activeThreadId, onSelectThread, onNew
       <div className="sidebar-brand">
         <div className="brand-mark">
           <div className="brand-icon" aria-hidden="true">
-            S
+            <BotIcon size={22} />
           </div>
           <div className="brand-text">
             <span className="brand-name">Shriram Credit</span>

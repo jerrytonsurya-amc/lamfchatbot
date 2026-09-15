@@ -3,6 +3,7 @@ import './components/embed/EmbedPreview.css';
 
 function getSnippet(baseUrl) {
   return `<!-- Shriram Credit LAMF AI Assistant — paste before </body> -->
+<!-- Adds a floating bot icon (bottom-right). Click to open the chat panel. -->
 <script>
   window.LAMF_CHATBOT_CONFIG = {
     baseUrl: '${baseUrl}'
@@ -49,12 +50,12 @@ export default function PreviewApp() {
           <span className="embed-preview-badge">Live widget preview</span>
           <h1>Website embed demo</h1>
           <p>
-            This page simulates your website with the floating chatbot widget active.
-            Click the gold button at the bottom-right to test it.
+            This page simulates your website with the floating chatbot icon active at the
+            bottom-right. Click the gold bot button to open the chat — enter a phone number to start.
           </p>
           <div className="embed-preview-actions">
             <a href="/" className="embed-preview-link">
-              ← Back to full app
+              ← Open widget demo
             </a>
             <button type="button" className="embed-preview-copy" onClick={copySnippet}>
               {copied ? 'Copied!' : 'Copy embed code'}
@@ -107,7 +108,9 @@ export default function PreviewApp() {
         <pre className="embed-snippet-code">{snippet}</pre>
         <p className="embed-snippet-note">
           Replace <code>baseUrl</code> with your deployed URL (e.g.{' '}
-          <code>https://lamfchatbot.vercel.app</code>) if hosting the script elsewhere.
+          <code>https://lamfchatbot.vercel.app</code>). The script adds a floating bot icon;
+          clicking it opens the chat in a panel. Optional:{' '}
+          <code>window.LAMF_CHATBOT.open()</code> / <code>.close()</code> / <code>.toggle()</code>.
         </p>
       </aside>
     </div>

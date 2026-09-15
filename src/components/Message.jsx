@@ -1,6 +1,7 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import TableWithChart from './TableWithChart';
+import { ChatAvatar } from './ChatAvatars';
 import './Message.css';
 
 const markdownComponents = {
@@ -13,7 +14,7 @@ export default function Message({ role, content, isLoading }) {
   return (
     <div className={`message ${role}`}>
       <div className="message-inner">
-        <div className="message-avatar">{isUser ? 'U' : 'AI'}</div>
+        <ChatAvatar role={role} className="message-avatar" />
         <div className="message-content">
           {isLoading ? (
             <div className="typing-indicator-wrap">

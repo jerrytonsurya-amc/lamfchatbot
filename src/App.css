@@ -1,5 +1,14 @@
-.app {
+.website-chat-demo {
+  min-height: 100vh;
+  background: #fef9ee;
   display: flex;
-  height: 100vh;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.website-chat-demo .embed-widget {
+  width: 100%;
+  max-width: 420px;
+  height: min(680px, calc(100vh - 48px));
 }

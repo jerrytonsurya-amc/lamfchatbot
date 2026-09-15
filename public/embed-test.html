@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LAMF Chatbot — Embed Test Page</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #fef9ee;
+        color: #0f172a;
+      }
+      .hero {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 80px 24px;
+        text-align: center;
+      }
+      h1 { font-size: 2rem; margin-bottom: 12px; }
+      p { color: #64748b; line-height: 1.6; }
+      .hint {
+        margin-top: 32px;
+        padding: 16px 20px;
+        background: #fff;
+        border: 1px solid rgba(212, 146, 10, 0.2);
+        border-radius: 12px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>Sample Website</h1>
+      <p>
+        This page simulates any external website with the LAMF chatbot snippet installed.
+        Look for the <strong>gold bot icon</strong> at the bottom-right corner and click it to open the chat.
+      </p>
+      <div class="hint">
+        The chat panel loads inside an iframe from <code>/embed</code> on this same origin.
+      </div>
+    </div>
+
+    <!-- Paste this snippet on any website -->
+    <script>
+      window.LAMF_CHATBOT_CONFIG = {
+        baseUrl: window.location.origin,
+      };
+    </script>
+    <script src="/lamf-chatbot.js" defer></script>
+  </body>
+</html>

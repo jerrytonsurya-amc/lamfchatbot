@@ -2,22 +2,28 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendEmbedChatMessage } from '../../lib/embedApi';
-import { loadEmbedMessages, saveEmbedMessages } from '../../lib/embedStorage.js';
+import {
+  subscribeToPhoneChat,
+  addPhoneMessage,
+  isFirebaseConfigured,
+} from '../../lib/firebase.js';
+import { loadPhoneMessages, savePhoneMessages } from '../../lib/phoneChatStorage.js';
+import {
+  getStoredPhone,
+  setStoredPhone,
+  clearStoredPhone,
+  isValidIndianPhone,
+  formatPhoneDisplay,
+} from '../../lib/phoneSession.js';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/companyGuard.js';
+import { BotIcon } from '../ChatAvatars';
 import './EmbedWidget.css';
-
-const QUICK_PROMPTS = [
-  'What is LAMF?',
-  'Who is eligible?',
-  'How does disbursement work?',
-];
 
 function EmbedBubble({ role, content, isLoading }) {
   const isUser = role === 'user';
 
   return (
     <div className={`embed-bubble ${role}`}>
-      {!isUser && <div className="embed-bubble-avatar">AI</div>}
       <div className="embed-bubble-body">
         {isLoading ? (
           <div className="embed-typing">
@@ -35,20 +41,88 @@ function EmbedBubble({ role, content, isLoading }) {
   );
 }
 
-export default function EmbedWidget({ onClose }) {
-  const [messages, setMessages] = useState(() => loadEmbedMessages());
+function WidgetHeader({ phone, onClose, onChangePhone }) {
+  return (
+    <header className="embed-widget-header">
+      <div className="embed-widget-header-main">
+        <div className="embed-widget-brand">
+          <div className="embed-widget-logo-wrap">
+            <div className="embed-widget-logo">
+              <BotIcon size={20} />
+            </div>
+            <span className="embed-widget-online" aria-hidden="true" />
+          </div>
+          <div>
+            <div className="embed-widget-title">Shriram Credit LAMF AI Assistant</div>
+            <div className="embed-widget-subtitle">Ask about eligibility, process, rates &amp; FAQs</div>
+            {phone && (
+              <div className="embed-widget-phone-row">
+                <span className="embed-widget-phone">{formatPhoneDisplay(phone)}</span>
+                <button type="button" className="embed-widget-change" onClick={onChangePhone}>
+                  Change
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <button type="button" className="embed-widget-close" onClick={onClose} aria-label="Close chat">
+          ×
+        </button>
+      </div>
+    </header>
+  );
+}
+
+export default function EmbedWidget({ onClose, standalone = false }) {
+  const [phase, setPhase] = useState(() => (getStoredPhone() ? 'chat' : 'welcome'));
+  const [phone, setPhone] = useState(() => getStoredPhone());
+  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [useLocalOnly, setUseLocalOnly] = useState(!isFirebaseConfigured());
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    saveEmbedMessages(messages);
-  }, [messages]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading, phase]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+    if (phase !== 'chat' || !phone) return undefined;
+
+    if (useLocalOnly) {
+      setMessages(loadPhoneMessages(phone));
+      return undefined;
+    }
+
+    const unsub = subscribeToPhoneChat(
+      phone,
+      (nextMessages) => {
+        const formatted = nextMessages.map((m) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+        }));
+        setMessages(formatted);
+        savePhoneMessages(phone, formatted);
+      },
+      (err) => {
+        console.warn('Firestore unavailable, using local chat storage:', err);
+        setUseLocalOnly(true);
+        setMessages(loadPhoneMessages(phone));
+      }
+    );
+
+    return unsub;
+  }, [phase, phone, useLocalOnly]);
+
+  useEffect(() => {
+    if (phase === 'chat' && phone && useLocalOnly) {
+      savePhoneMessages(phone, messages);
+    }
+  }, [messages, phone, phase, useLocalOnly]);
 
   const handleClose = useCallback(() => {
     if (onClose) {
@@ -58,10 +132,44 @@ export default function EmbedWidget({ onClose }) {
     window.parent.postMessage({ type: 'lamf-chatbot-close' }, '*');
   }, [onClose]);
 
+  const handleContinue = (e) => {
+    e.preventDefault();
+    if (!isValidIndianPhone(phoneInput)) {
+      setPhoneError('Enter a valid 10-digit Indian mobile number');
+      return;
+    }
+    const normalized = setStoredPhone(phoneInput);
+    setPhoneError('');
+    setPhone(normalized);
+    setPhase('chat');
+  };
+
+  const handleChangePhone = () => {
+    clearStoredPhone();
+    setPhone(null);
+    setPhoneInput('');
+    setMessages([]);
+    setPhoneError('');
+    setPhase('welcome');
+  };
+
+  const persistMessage = useCallback(
+    async (role, content, sources = []) => {
+      if (useLocalOnly || !phone) return;
+      try {
+        await addPhoneMessage(phone, role, content, sources);
+      } catch (err) {
+        console.warn('Failed to save message to Firestore:', err);
+        setUseLocalOnly(true);
+      }
+    },
+    [phone, useLocalOnly]
+  );
+
   const sendMessage = useCallback(
     async (text) => {
       const trimmed = text.trim();
-      if (!trimmed || isLoading) return;
+      if (!trimmed || isLoading || !phone) return;
 
       const userMsg = { id: `u-${Date.now()}`, role: 'user', content: trimmed };
       setMessages((prev) => [...prev, userMsg]);
@@ -70,34 +178,44 @@ export default function EmbedWidget({ onClose }) {
 
       try {
         if (detectOutOfScopeQuestion(trimmed)) {
-          setMessages((prev) => [
-            ...prev,
-            { id: `a-${Date.now()}`, role: 'assistant', content: getOutOfScopeMessage() },
-          ]);
+          const reply = getOutOfScopeMessage();
+          if (useLocalOnly) {
+            setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: reply }]);
+          } else {
+            await persistMessage('user', trimmed);
+            await persistMessage('assistant', reply);
+          }
           return;
         }
 
-        const history = messages.map((m) => ({ role: m.role, content: m.content }));
+        if (!useLocalOnly) {
+          await persistMessage('user', trimmed);
+        }
+
+        const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
         const { answer } = await sendEmbedChatMessage(trimmed, history);
-        setMessages((prev) => [
-          ...prev,
-          { id: `a-${Date.now()}`, role: 'assistant', content: answer },
-        ]);
+
+        if (useLocalOnly) {
+          setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: answer }]);
+        } else {
+          await persistMessage('assistant', answer);
+        }
       } catch (err) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `e-${Date.now()}`,
-            role: 'assistant',
-            content: `Sorry, something went wrong: ${err.message}`,
-          },
-        ]);
+        const errorContent = `Sorry, something went wrong: ${err.message}`;
+        if (useLocalOnly) {
+          setMessages((prev) => [
+            ...prev,
+            { id: `e-${Date.now()}`, role: 'assistant', content: errorContent },
+          ]);
+        } else {
+          await persistMessage('assistant', errorContent);
+        }
       } finally {
         setIsLoading(false);
         inputRef.current?.focus();
       }
     },
-    [isLoading, messages]
+    [isLoading, messages, phone, useLocalOnly, persistMessage]
   );
 
   const handleSubmit = (e) => {
@@ -105,45 +223,49 @@ export default function EmbedWidget({ onClose }) {
     sendMessage(input);
   };
 
-  return (
-    <div className="embed-widget">
-      <header className="embed-widget-header">
-        <div className="embed-widget-brand">
-          <div className="embed-widget-logo">S</div>
-          <div>
-            <div className="embed-widget-title">Shriram Credit LAMF AI</div>
-            <div className="embed-widget-subtitle">Loan Against Mutual Funds</div>
+  const widgetClass = [
+    'embed-widget',
+    standalone ? 'embed-widget--standalone' : 'embed-widget--frame',
+  ].join(' ');
+
+  if (phase === 'welcome') {
+    return (
+      <div className={widgetClass}>
+        <WidgetHeader onClose={handleClose} />
+        <div className="embed-widget-welcome-screen">
+          <div className="embed-welcome-card">
+            <h2>Welcome</h2>
+            <p>Please enter your phone number to start chatting</p>
+            <form onSubmit={handleContinue}>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="9876543210"
+                value={phoneInput}
+                onChange={(e) => {
+                  setPhoneInput(e.target.value);
+                  if (phoneError) setPhoneError('');
+                }}
+                aria-invalid={Boolean(phoneError)}
+              />
+              {phoneError && <p className="embed-welcome-error">{phoneError}</p>}
+              <button type="submit">Continue</button>
+            </form>
           </div>
         </div>
-        <button type="button" className="embed-widget-close" onClick={handleClose} aria-label="Close chat">
-          ×
-        </button>
-      </header>
+      </div>
+    );
+  }
+
+  return (
+    <div className={widgetClass}>
+      <WidgetHeader phone={phone} onClose={handleClose} onChangePhone={handleChangePhone} />
 
       <div className="embed-widget-messages">
-        {messages.length === 0 ? (
-          <div className="embed-widget-welcome">
-            <h2>Hi! How can I help?</h2>
-            <p>Ask about LAMF eligibility, process, rates, or FAQs.</p>
-            <div className="embed-quick-prompts">
-              {QUICK_PROMPTS.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  className="embed-quick-prompt"
-                  onClick={() => sendMessage(prompt)}
-                  disabled={isLoading}
-                >
-                  {prompt}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <EmbedBubble key={msg.id} role={msg.role} content={msg.content} />
-          ))
-        )}
+        {messages.map((msg) => (
+          <EmbedBubble key={msg.id} role={msg.role} content={msg.content} />
+        ))}
         {isLoading && <EmbedBubble role="assistant" isLoading />}
         <div ref={bottomRef} />
       </div>
@@ -154,7 +276,7 @@ export default function EmbedWidget({ onClose }) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your LAMF question..."
+          placeholder="Write your message..."
           disabled={isLoading}
           autoComplete="off"
         />

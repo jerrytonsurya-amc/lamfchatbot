@@ -10,6 +10,7 @@ import {
   getDocs,
   query,
   where,
+  limit,
   orderBy,
   onSnapshot,
   serverTimestamp,
@@ -17,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { COMPANY } from '../../shared/company.js';
 import { getSessionId } from './userSession.js';
+import { getStoredPhone, normalizePhone } from './phoneSession.js';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -32,16 +34,94 @@ export const db = getFirestore(app);
 
 const THREADS = 'threads';
 
-async function assertThreadOwnership(threadId) {
-  const sessionId = getSessionId();
+export function isFirebaseConfigured() {
+  return Boolean(import.meta.env.VITE_FIREBASE_API_KEY && import.meta.env.VITE_FIREBASE_PROJECT_ID);
+}
+
+async function assertThreadAccess(threadId) {
   const snap = await getDoc(doc(db, THREADS, threadId));
   if (!snap.exists()) {
     throw new Error('Chat not found');
   }
-  if (snap.data().sessionId !== sessionId) {
-    throw new Error('Access denied');
+  const data = snap.data();
+  const phone = getStoredPhone();
+  if (phone && data.phoneNumber === normalizePhone(phone)) {
+    return data;
   }
-  return snap.data();
+  if (data.sessionId === getSessionId()) {
+    return data;
+  }
+  throw new Error('Access denied');
+}
+
+async function getPhoneThreadId(phoneNumber) {
+  const normalized = normalizePhone(phoneNumber);
+  const q = query(collection(db, THREADS), where('phoneNumber', '==', normalized), limit(1));
+  const snap = await getDocs(q);
+  return snap.empty ? null : snap.docs[0].id;
+}
+
+export async function ensurePhoneThread(phoneNumber) {
+  const normalized = normalizePhone(phoneNumber);
+  const existing = await getPhoneThreadId(normalized);
+  if (existing) return existing;
+
+  const ref = await addDoc(collection(db, THREADS), {
+    title: `LAMF · +91 ${normalized}`,
+    phoneNumber: normalized,
+    company: COMPANY,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export function subscribeToPhoneChat(phoneNumber, callback, onError) {
+  const normalized = normalizePhone(phoneNumber);
+  let unsubMessages = null;
+
+  const q = query(collection(db, THREADS), where('phoneNumber', '==', normalized), limit(1));
+
+  const unsubThread = onSnapshot(
+    q,
+    (snapshot) => {
+      if (unsubMessages) unsubMessages();
+
+      if (snapshot.empty) {
+        callback([]);
+        return;
+      }
+
+      const threadId = snapshot.docs[0].id;
+      const messagesQuery = query(
+        collection(db, THREADS, threadId, 'messages'),
+        orderBy('createdAt', 'asc')
+      );
+
+      unsubMessages = onSnapshot(
+        messagesQuery,
+        (messagesSnap) => {
+          const messages = messagesSnap.docs.map((d) => ({
+            id: d.id,
+            ...d.data(),
+          }));
+          callback(messages);
+        },
+        (error) => onError?.(error)
+      );
+    },
+    (error) => onError?.(error)
+  );
+
+  return () => {
+    unsubThread();
+    if (unsubMessages) unsubMessages();
+  };
+}
+
+export async function addPhoneMessage(phoneNumber, role, content, sources = []) {
+  const threadId = await ensurePhoneThread(phoneNumber);
+  return addMessage(threadId, role, content, sources);
 }
 
 export function subscribeToThreads(callback, onError) {
@@ -123,7 +203,7 @@ export async function createThread(title = 'New chat') {
 }
 
 export async function updateThreadTitle(threadId, title) {
-  await assertThreadOwnership(threadId);
+  await assertThreadAccess(threadId);
   await updateDoc(doc(db, THREADS, threadId), {
     title,
     updatedAt: serverTimestamp(),
@@ -131,7 +211,7 @@ export async function updateThreadTitle(threadId, title) {
 }
 
 export async function deleteThread(threadId) {
-  await assertThreadOwnership(threadId);
+  await assertThreadAccess(threadId);
   const messagesRef = collection(db, THREADS, threadId, 'messages');
   const messagesSnap = await getDocs(messagesRef);
   const batch = writeBatch(db);
@@ -141,7 +221,7 @@ export async function deleteThread(threadId) {
 }
 
 export async function addMessage(threadId, role, content, sources = []) {
-  await assertThreadOwnership(threadId);
+  await assertThreadAccess(threadId);
   const msgRef = await addDoc(collection(db, THREADS, threadId, 'messages'), {
     role,
     content,
