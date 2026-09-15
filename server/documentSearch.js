@@ -34,13 +34,13 @@ function getChunkCompany(chunk) {
 }
 
 const QUERY_EXPANSIONS = {
-  lamf: ['lamf', 'loan against mutual fund', 'mutual fund', 'mf units', 'pledge'],
-  eligibility: ['eligibility', 'eligible', 'qualify', 'criteria', 'requirement'],
+  lamf: ['lamf', 'loan against mutual fund', 'mutual fund', 'mf units', 'pledge', 'stocks', 'shares', 'equity shares'],
+  eligibility: ['eligibility', 'eligible', 'qualify', 'criteria', 'requirement', 'minimum holding', 'minimum portfolio', 'holding'],
   disbursement: ['disbursement', 'disburse', 'withdrawal', 'utilisation', 'withdraw'],
-  interest: ['interest', 'rate', 'roi', 'charges', 'fee', 'processing'],
-  repayment: ['repayment', 'repay', 'closure', 'foreclosure', 'outstanding'],
-  pledge: ['pledge', 'pledged', 'collateral', 'security', 'lien'],
-  process: ['process', 'application', 'journey', 'steps', 'onboarding'],
+  interest: ['interest', 'rate', 'roi', 'charges', 'fee', 'processing', 'pricing', 'risk-based', 'dynamic'],
+  repayment: ['repayment', 'repay', 'closure', 'foreclosure', 'pre-closure', 'preclosure', 'outstanding', 'balloon', 'emi', 'interest only', 'principal', 'early repayment', 'tenure', '12 month', 'loan period'],
+  pledge: ['pledge', 'pledged', 'collateral', 'security', 'lien', 'additional pledge', 'pledge more', 'add units'],
+  process: ['process', 'application', 'journey', 'steps', 'onboarding', 'digital', 'validation', 'digilocker', 'pan', 'kyc', 'bank account'],
   voicebot: ['voicebot', 'script', 'calling', 'call', 'assistant'],
   faq: ['faq', 'question', 'answer', 'customer'],
   sccl: ['sccl', 'shriram', 'shriram credit'],

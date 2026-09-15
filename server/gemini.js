@@ -10,7 +10,16 @@ import {
 } from './retry.js';
 import { config } from './config.js';
 import { polishCustomerAnswer } from './formatMarkdown.js';
-import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../shared/companyGuard.js';
+import {
+  detectOutOfScopeQuestion,
+  getOutOfScopeMessage,
+  detectStocksMention,
+  getStocksClarificationInstruction,
+  STOCKS_CLARIFICATION_CONTEXT,
+  detectAdditionalPledgeQuestion,
+  getAdditionalPledgeInstruction,
+  ADDITIONAL_PLEDGE_CONTEXT,
+} from '../shared/companyGuard.js';
 import { COMPANY } from '../shared/company.js';
 
 const SYSTEM_PROMPT = `You are the Shriram Credit LAMF AI Assistant for Shriram Credit Company Limited's LAMF (Loan Against Mutual Funds) program.
@@ -37,6 +46,8 @@ Content rules:
 3. Use the CURRENT DATE AND TIME to interpret "latest", "recent", or "current" when relevant.
 4. Use UK English when mirroring voicebot phrasing from the context.
 5. Read all context excerpts before answering; merge facts into one cohesive reply.
+6. If the user mentions stocks or equity shares (including phrases like "mutual fund stocks"), clearly state upfront that LAMF is only against eligible mutual fund units — not individual stocks or equity shares — before answering any LTV or loan amount question.
+7. If the user asks about additional pledge, pledging more units, or adding collateral, clearly state that additional pledge is not available right now. Do not describe steps to add units via MF Central.
 
 Greetings only (when the user says hi/hello):
 - Reply warmly in one or two short sentences.
@@ -89,7 +100,7 @@ function resolveCurrentDateTime(currentDateTime) {
 export async function generateAnswer(question, history = [], currentDateTime = null) {
   const trimmed = question.trim();
   const nowLabel = resolveCurrentDateTime(currentDateTime);
-  const cacheKey = `v17:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
+  const cacheKey = `v19:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
   const cached = getCachedAnswer(cacheKey);
   if (cached) return cached;
 
@@ -111,8 +122,17 @@ export async function generateAnswer(question, history = [], currentDateTime = n
     return result;
   }
 
+  const stocksMentioned = detectStocksMention(trimmed);
+  const additionalPledgeAsked = detectAdditionalPledgeQuestion(trimmed);
+
   const chunks = await retrieveRelevantChunks(question, config.maxContextChunks);
-  const context = chunks._context || buildContext(chunks);
+  let context = chunks._context || buildContext(chunks);
+  if (stocksMentioned) {
+    context = `${STOCKS_CLARIFICATION_CONTEXT}\n\n${context}`;
+  }
+  if (additionalPledgeAsked) {
+    context = `${ADDITIONAL_PLEDGE_CONTEXT}\n\n${context}`;
+  }
   const searchMeta = chunks._meta || {};
 
   const historyText = history
@@ -123,7 +143,7 @@ export async function generateAnswer(question, history = [], currentDateTime = n
   const prompt = `${SYSTEM_PROMPT}
 
 CURRENT DATE AND TIME: ${nowLabel}
-
+${stocksMentioned ? `\n${getStocksClarificationInstruction()}\n` : ''}${additionalPledgeAsked ? `\n${getAdditionalPledgeInstruction()}\n` : ''}
 CONTEXT:
 ${context}
 ${historyText ? `\nPRIOR MESSAGES:\n${historyText}\n` : ''}

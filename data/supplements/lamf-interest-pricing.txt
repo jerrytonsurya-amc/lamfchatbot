@@ -1,0 +1,16 @@
+SHRIRAM CREDIT — LAMF Interest Rate (Risk-Based Pricing)
+
+Customer question: How is my LAMF interest rate calculated?
+Simple answer: Shriram Credit uses risk-based pricing to calculate your interest rate — not dynamic pricing. Your rate is determined at loan sanction based on your risk profile, including factors such as sanctioned limit, credit score, and mutual fund type (equity or debt). The applicable rate is shown in your offer, Key Fact Statement (KFS), and loan agreement.
+
+Customer question: What is risk-based pricing?
+Simple answer: Risk-based pricing means your interest rate reflects your assessed credit and loan risk at the time of sanction. The rate is fixed once your loan is sanctioned and does not change during the loan tenure after disbursement.
+
+Customer question: Is LAMF interest rate dynamic?
+Simple answer: No. LAMF does not use dynamic pricing. Interest is calculated using risk-based pricing at sanction. Once disbursed, your interest rate remains fixed for the duration of your loan.
+
+Customer question: What interest rate range applies to LAMF?
+Simple answer: The applicable interest rate falls within the published LAMF range (typically 9.5% to 15% per annum). Your exact rate within that range is determined by risk-based pricing at sanction and shown in your KFS and loan agreement.
+
+Customer question: Where can I see my interest rate?
+Simple answer: Your interest rate is shown in your LAMF journey offer, Key Fact Statement (KFS), and loan agreement before you accept the loan.

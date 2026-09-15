@@ -1,8 +1,12 @@
-const STORAGE_KEY = 'lamf-chat-threads';
+import { getSessionId } from './userSession.js';
+
+function storageKey() {
+  return `lamf-chat-threads-${getSessionId()}`;
+}
 
 function loadThreads() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey());
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -10,7 +14,7 @@ function loadThreads() {
 }
 
 function saveThreads(threads) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
+  localStorage.setItem(storageKey(), JSON.stringify(threads));
 }
 
 export function getLocalThreads() {
@@ -22,6 +26,7 @@ export function createLocalThread(title = 'New chat') {
     id: `local-${Date.now()}`,
     title,
     company: 'LAMF',
+    sessionId: getSessionId(),
     createdAt: Date.now(),
     updatedAt: Date.now(),
     messages: [],

@@ -36,7 +36,6 @@ export default function App() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [useLocalOnly, setUseLocalOnly] = useState(false);
-  const [storageNotice, setStorageNotice] = useState('');
 
   useEffect(() => {
     if (useLocalOnly) {
@@ -47,17 +46,11 @@ export default function App() {
     const unsub = subscribeToThreads(
       (nextThreads) => {
         setThreads(nextThreads);
-        setStorageNotice('');
       },
       (err) => {
         console.warn('Firestore unavailable, using local chat storage:', err);
         setUseLocalOnly(true);
         setThreads(getLocalThreads());
-        setStorageNotice(
-          err?.code === 'permission-denied'
-            ? 'Firestore rules are blocking access. In Firebase Console → Firestore → Rules, publish the rules from firestore.rules in this project, then refresh.'
-            : 'Chat history is saved locally. Enable Firestore in Firebase to sync across devices.'
-        );
       }
     );
 
@@ -82,11 +75,6 @@ export default function App() {
         console.warn('Firestore messages unavailable, using local chat storage:', err);
         setUseLocalOnly(true);
         setMessages(getLocalMessages(activeThreadId));
-        setStorageNotice(
-          err?.code === 'permission-denied'
-            ? 'Firestore rules are blocking access. In Firebase Console → Firestore → Rules, publish the rules from firestore.rules in this project, then refresh.'
-            : 'Chat history is saved locally. Enable Firestore in Firebase to sync across devices.'
-        );
       }
     );
 
@@ -117,9 +105,6 @@ export default function App() {
       const id = createLocalThread('New chat');
       setActiveThreadId(id);
       refreshLocalState(id);
-      setStorageNotice(
-        'Firestore is not available. Chat works locally — enable Firestore in Firebase for cloud sync.'
-      );
     }
   }, [useLocalOnly, refreshLocalState]);
 
@@ -178,9 +163,6 @@ export default function App() {
           setUseLocalOnly(true);
           addLocalMessage(id, 'user', trimmed);
           refreshLocalState(id);
-          setStorageNotice(
-            'Firestore is not available. Chat works locally — enable Firestore in Firebase for cloud sync.'
-          );
         }
       };
 
@@ -212,9 +194,6 @@ export default function App() {
               console.warn('Firestore create failed, switching to local storage:', err);
               setUseLocalOnly(true);
               threadId = createLocalThread(title);
-              setStorageNotice(
-                'Firestore is not available. Chat works locally — enable Firestore in Firebase for cloud sync.'
-              );
             }
           }
           setActiveThreadId(threadId);
@@ -288,7 +267,6 @@ export default function App() {
         isLoading={isLoading}
         onSend={handleSend}
         disabled={false}
-        notice={storageNotice}
       />
     </div>
   );

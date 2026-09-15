@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { sendEmbedChatMessage } from '../../lib/embedApi';
+import { loadEmbedMessages, saveEmbedMessages } from '../../lib/embedStorage.js';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/companyGuard.js';
 import './EmbedWidget.css';
 
@@ -35,11 +36,15 @@ function EmbedBubble({ role, content, isLoading }) {
 }
 
 export default function EmbedWidget({ onClose }) {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => loadEmbedMessages());
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    saveEmbedMessages(messages);
+  }, [messages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

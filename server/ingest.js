@@ -3,6 +3,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { COMPANY } from '../shared/company.js';
+import { patchLtvInText } from '../scripts/patch-ltv-knowledge.js';
+import { patchRepaymentInText } from '../scripts/patch-repayment-knowledge.js';
+import { patchPricingInText } from '../scripts/patch-pricing-knowledge.js';
+import { patchProcessingFeesInText } from '../scripts/patch-processing-fees-knowledge.js';
+import { patchForeclosureInText } from '../scripts/patch-foreclosure-knowledge.js';
+import { patchMinimumHoldingInText } from '../scripts/patch-minimum-holding-knowledge.js';
+import { patchTenureInText } from '../scripts/patch-tenure-knowledge.js';
+import { patchAdditionalPledgeInText } from '../scripts/patch-additional-pledge-knowledge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -10,6 +18,54 @@ const INDEX_PATH = path.join(ROOT, 'data', 'knowledge-index.json');
 
 const CHUNK_SIZE = 1200;
 const CHUNK_OVERLAP = 200;
+
+const SUPPLEMENT_FILES = [
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-digital-process.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-digital-process.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-repayment-balloon.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-repayment-balloon.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-interest-pricing.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-interest-pricing.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-processing-fees.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-processing-fees.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-stocks-clarification.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-stocks-clarification.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-foreclosure.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-foreclosure.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-minimum-holding.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-minimum-holding.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-tenure.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-tenure.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-additional-pledge.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-additional-pledge.txt',
+  },
+];
 
 const LAMF_DOCUMENTS = [
   {
@@ -84,10 +140,32 @@ function extractDocxText(docxPath) {
   return text.replace(/\s+/g, ' ').trim();
 }
 
+function ingestTextFile(filePath, source, category) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing ${filePath}`);
+  }
+
+  console.log(`Processing: ${filePath}`);
+  const text = fs.readFileSync(filePath, 'utf8').replace(/\s+/g, ' ').trim();
+  const chunks = chunkText(text, source, category, COMPANY);
+  console.log(`  -> ${chunks.length} chunks (${text.length} chars)`);
+  return chunks;
+}
+
 async function ingestDocx(filePath, category) {
   const source = path.basename(filePath);
   console.log(`Processing: ${filePath}`);
-  const text = extractDocxText(filePath);
+  let text = extractDocxText(filePath);
+  if (source.includes('Program_Document')) {
+    text = patchLtvInText(text);
+  }
+  text = patchRepaymentInText(text);
+  text = patchPricingInText(text);
+  text = patchProcessingFeesInText(text);
+  text = patchForeclosureInText(text);
+  text = patchMinimumHoldingInText(text);
+  text = patchTenureInText(text);
+  text = patchAdditionalPledgeInText(text);
   const chunks = chunkText(text, source, category, COMPANY);
   console.log(`  -> ${chunks.length} chunks (${text.length} chars)`);
   return chunks;
@@ -105,6 +183,16 @@ async function ingest() {
       allChunks.push(...chunks);
     } catch (err) {
       console.warn(`  Skipped ${docPath}: ${err.message}`);
+    }
+  }
+
+  for (const { path: supplementPath, category, source } of SUPPLEMENT_FILES) {
+    console.log(`\nCategory: ${category} (supplement)`);
+    try {
+      const chunks = ingestTextFile(supplementPath, source, category);
+      allChunks.push(...chunks);
+    } catch (err) {
+      console.warn(`  Skipped ${supplementPath}: ${err.message}`);
     }
   }
 
