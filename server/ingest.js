@@ -46,6 +46,11 @@ const SUPPLEMENT_FILES = [
     source: 'lamf-stocks-clarification.txt',
   },
   {
+    path: path.join(ROOT, 'data/supplements/lamf-ltv-equity.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-ltv-equity.txt',
+  },
+  {
     path: path.join(ROOT, 'data/supplements/lamf-foreclosure.txt'),
     category: 'LAMF Customer FAQs',
     source: 'lamf-foreclosure.txt',

@@ -6,7 +6,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
 const MIN_HOLDING_TEXT =
-  'The minimum mutual fund holding required is between Rs. 15,000 and Rs. 16,000 depending on whether eligible funds are equity (approximately Rs. 15,000) or debt (approximately Rs. 16,000) mutual funds, based on applicable LTV and the minimum loan amount of Rs. 10,000.';
+  'The minimum mutual fund holding required is between Rs. 22,000 and Rs. 16,000 depending on whether eligible funds are equity (approximately Rs. 22,000) or debt (approximately Rs. 16,000) mutual funds, based on applicable LTV (45% for equity, 75% for debt) and the minimum loan amount of Rs. 10,000.';
 
 /** Add minimum MF holding guidance to indexed knowledge. */
 export function patchMinimumHoldingInText(text) {
@@ -19,7 +19,7 @@ export function patchMinimumHoldingInText(text) {
     ],
     [
       'Who can apply for this loan? You can apply if you hold mutual fund units that qualify for this loan, and you meet our standard borrower checks, such as KYC verification.',
-      'Who can apply for this loan? You can apply if you hold eligible mutual fund units that qualify for this loan (minimum holding typically Rs. 15,000 for equity or Rs. 16,000 for debt funds, depending on fund type), and you meet our standard borrower checks, such as KYC verification.',
+      'Who can apply for this loan? You can apply if you hold eligible mutual fund units that qualify for this loan (minimum holding typically Rs. 22,000 for equity or Rs. 16,000 for debt funds, depending on fund type), and you meet our standard borrower checks, such as KYC verification.',
     ],
   ];
 

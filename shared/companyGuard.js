@@ -29,7 +29,7 @@ export function detectStocksMention(query) {
 export const STOCKS_CLARIFICATION_CONTEXT =
   'Customer question: Can I get a LAMF loan against stocks or equity shares? ' +
   'Simple answer: No. Shriram Credit LAMF provides loans only against eligible mutual fund units — not against individual stocks or equity shares. ' +
-  'This product does not offer Loan Against Shares. If you hold eligible mutual funds, LTV applies to those units (65% for equity mutual funds and 75% for debt mutual funds).';
+  'This product does not offer Loan Against Shares. If you hold eligible mutual funds, LTV applies to those units (45% for equity mutual funds and 75% for debt mutual funds).';
 
 export function detectAdditionalPledgeQuestion(query) {
   const lower = query.toLowerCase().replace(/\s+/g, ' ');

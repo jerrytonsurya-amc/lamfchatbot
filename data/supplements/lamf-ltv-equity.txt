@@ -1,0 +1,11 @@
+Category: LAMF Customer FAQs
+Source: lamf-ltv-equity.txt
+
+Question: What is the LTV for equity mutual funds in LAMF?
+Simple answer: For eligible equity mutual fund units, the loan-to-value (LTV) is up to 45% of the current market value of pledged units. Debt mutual funds remain at up to 75% LTV.
+
+Question: What LTV applies to equity vs debt mutual funds?
+Simple answer: Equity mutual fund units: up to 45% LTV. Debt mutual fund units: up to 75% LTV, based on current market value of pledged eligible units on the Approved Securities List.
+
+Question: How much loan can I get against equity mutual funds?
+Simple answer: Your drawing power against equity MF units is up to 45% of the current market value of the eligible pledged units. Debt fund units can go up to 75% LTV.

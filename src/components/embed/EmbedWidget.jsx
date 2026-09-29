@@ -84,10 +84,36 @@ export default function EmbedWidget({ onClose, standalone = false }) {
   const [useLocalOnly, setUseLocalOnly] = useState(!isFirebaseConfigured());
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const wasLoadingRef = useRef(false);
+
+  const focusChatInput = useCallback(() => {
+    requestAnimationFrame(() => {
+      inputRef.current?.focus({ preventScroll: true });
+    });
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading, phase]);
+
+  useEffect(() => {
+    if (phase === 'chat') {
+      focusChatInput();
+    }
+  }, [phase, focusChatInput]);
+
+  useEffect(() => {
+    if (wasLoadingRef.current && !isLoading) {
+      focusChatInput();
+    }
+    wasLoadingRef.current = isLoading;
+  }, [isLoading, focusChatInput]);
+
+  useEffect(() => {
+    if (phase === 'chat' && !isLoading) {
+      focusChatInput();
+    }
+  }, [messages, phase, isLoading, focusChatInput]);
 
   useEffect(() => {
     if (phase !== 'chat' || !phone) return undefined;
@@ -212,7 +238,6 @@ export default function EmbedWidget({ onClose, standalone = false }) {
         }
       } finally {
         setIsLoading(false);
-        inputRef.current?.focus();
       }
     },
     [isLoading, messages, phone, useLocalOnly, persistMessage]
@@ -277,8 +302,8 @@ export default function EmbedWidget({ onClose, standalone = false }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Write your message..."
-          disabled={isLoading}
           autoComplete="off"
+          autoFocus
         />
         <button type="submit" disabled={isLoading || !input.trim()} aria-label="Send">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
