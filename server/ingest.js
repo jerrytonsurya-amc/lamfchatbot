@@ -11,6 +11,7 @@ import { patchForeclosureInText } from '../scripts/patch-foreclosure-knowledge.j
 import { patchMinimumHoldingInText } from '../scripts/patch-minimum-holding-knowledge.js';
 import { patchTenureInText } from '../scripts/patch-tenure-knowledge.js';
 import { patchAdditionalPledgeInText } from '../scripts/patch-additional-pledge-knowledge.js';
+import { patchProductTermsInText } from '../scripts/patch-product-terms-knowledge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -26,9 +27,14 @@ const SUPPLEMENT_FILES = [
     source: 'lamf-digital-process.txt',
   },
   {
-    path: path.join(ROOT, 'data/supplements/lamf-repayment-balloon.txt'),
+    path: path.join(ROOT, 'data/supplements/lamf-product-terms.txt'),
     category: 'LAMF Customer FAQs',
-    source: 'lamf-repayment-balloon.txt',
+    source: 'lamf-product-terms.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-repayment-options.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-repayment-options.txt',
   },
   {
     path: path.join(ROOT, 'data/supplements/lamf-interest-pricing.txt'),
@@ -171,6 +177,7 @@ async function ingestDocx(filePath, category) {
   text = patchMinimumHoldingInText(text);
   text = patchTenureInText(text);
   text = patchAdditionalPledgeInText(text);
+  text = patchProductTermsInText(text);
   const chunks = chunkText(text, source, category, COMPANY);
   console.log(`  -> ${chunks.length} chunks (${text.length} chars)`);
   return chunks;

@@ -5,54 +5,33 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-/** Align customer-facing repayment text with balloon-only launch offering. */
+/** Balloon-only repayment (currently), balloon day count 365, gap-day interest in first and last instalments. */
 export function patchRepaymentInText(text) {
   let next = text;
 
   const replacements = [
     [
-      'It may include EMI or interest payments, depending on your loan terms.',
-      'You pay monthly interest only during the loan tenure. The principal is repaid at the end of the tenure (balloon repayment).',
-    ],
-    [
-      'What is an EMI? EMI is the fixed amount payable every month towards the loan, as per the repayment schedule.',
-      'What is balloon repayment? You pay interest only each month during the loan period. The full principal is due at the end of the agreed tenure.',
-    ],
-    [
-      'lets us auto-debit your EMI or interest payments from your bank account',
-      'lets us auto-debit your monthly interest payments from your bank account',
-    ],
-    [
       'Repayment Types EMI (Equated Monthly Instalment) or Balloon. Selected at sanction; applies to all withdrawals under the limit',
-      'Repayment Type Balloon (interest-only monthly payments; principal at end of tenure). At launch, balloon is the available repayment option. Selected at sanction; applies to all withdrawals under the limit',
+      'Repayment Types Balloon',
     ],
     [
-      'Customer selects tenure (6, 12, 18, 24, 30, 36 months) and repayment type (EMI or Balloon). Repayment type selected applies to all withdrawals under the limit',
-      'Loan tenure is 12 months only at launch. Repayment is balloon (interest-only monthly payments; principal at end of tenure). The repayment type selected at sanction applies to all withdrawals under the limit',
+      'Day Count Convention EMI repayment: Actual / 365. Balloon repayment (Interest serving): 30 / 360',
+      'Day Count Convention Balloon repayment (Interest serving): 365',
+    ],
+    ['EMI: Actual / 365. Balloon: 30 / 360.', 'Balloon: 365.'],
+    [
+      'The selected repayment type applies to all withdrawals under the limit and cannot be changed mid-tenure.',
+      'The selected repayment type applies to all withdrawals under the limit and cannot be changed mid-tenure. Currently we have only balloon repayment.',
     ],
     [
-      'one of two configurations (EMI or Balloon) set at the time of sanction',
-      'balloon repayment (interest-only monthly payments; principal at end of tenure) set at the time of sanction. At launch, balloon is the available repayment option',
+      'EMI or Balloon: both operating within the Sanctioned Limit structure.',
+      'EMI or Balloon: both operating within the Sanctioned Limit structure. Currently only Balloon repayment is offered.',
     ],
+    ['Day count: 30/360.', 'Day count: 365.'],
+    ['Gap Day Interest Collected during first instalment', 'Gap Day Interest Collected during the first and last instalments'],
     [
-      'EMI or Balloon: both operating within the Sanctioned Limit',
-      'Balloon repayment (interest-only; principal at end of tenure) operating within the Sanctioned Limit. At launch, balloon is the available repayment option',
-    ],
-    [
-      'This mandate supports automated EMI or interest payments.',
-      'This mandate supports automated monthly interest payments under balloon repayment.',
-    ],
-    [
-      'The e-Mandate allows your EMI or interest payment to be collected automatically',
-      'The e-Mandate allows your monthly interest payment to be collected automatically',
-    ],
-    [
-      'It is needed to collect your EMI or interest automatically after you use the loan facility.',
-      'It is needed to collect your monthly interest automatically under balloon repayment after you use the loan facility.',
-    ],
-    [
-      'Then choose the loan period and repayment option.',
-      'Then choose the loan period. At launch, repayment is balloon (interest-only) only.',
+      'Interest for the period between disbursement date and first instalment due date. Collected in first instalment.',
+      'Interest for the period between disbursement date and first instalment due date. Collected during the first and last instalments.',
     ],
   ];
 

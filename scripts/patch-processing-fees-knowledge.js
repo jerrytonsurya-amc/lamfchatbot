@@ -5,19 +5,22 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-/** Update processing fee minimum and separate charge treatment. */
+/** Tiered processing fee (min Rs. 999 + GST); stamp duty and lien charges are levied separately. */
 export function patchProcessingFeesInText(text) {
   let next = text;
 
   const replacements = [
+    ['Processing Fees* (Includes Stamp duty, Lien marking & Lien Removal charges) ', 'Processing Fees '],
+    ['Processing Fees (Includes Stamp duty, Lien marking & Lien Removal charges) ', 'Processing Fees '],
+    ['Customer Support lassupport@shriramcredit.in * Dynamic pricing Processing fee ', 'Customer Support lassupport@shriramcredit.in '],
+    ['e-stamped via DIGIO; Part of processing fee Lien Marking', 'e-stamped via DIGIO; Lien Marking'],
+    ['Rs. 100 plus applicable GST; Part of processing fee ; Also applicable', 'Rs. 100 plus applicable GST; Also applicable'],
     [
-      'Processing Fees* (Includes Stamp duty, Lien marking & Lien Removal charges)',
-      'Processing Fees* (exclusive of stamp duty, lien marking, and lien removal charges)',
+      'Lien Marking Charges Rs. 450 plus GST Included in processing fee Lien Release Charges Rs. 100 plus GST Included in processing fee. In case of partial release, or invoke collected/adjusted at the backend ',
+      '',
     ],
-    [
-      'Processing Fees (Includes Stamp duty, Lien marking & Lien Removal charges)',
-      'Processing Fees (exclusive of stamp duty, lien marking, and lien removal charges)',
-    ],
+    ['Digio eStamping and eSign Fee Rs. 10 per agreement (Digio DDE service fee) Digio per-agreement fee', 'eStamping and eSign Fee Rs. 10 per agreement (Digio DDE service fee) per-agreement fee'],
+    ['computed by state and loan amount; deducted upfront via Digio.', 'computed by state and loan amount; deducted upfront.'],
     [
       'Maximum 1% of Sanctioned Limit or 1500 whichever is higher',
       'Maximum 1% of Sanctioned Limit or Rs. 999 plus applicable GST, whichever is higher',
@@ -27,32 +30,8 @@ export function patchProcessingFeesInText(text) {
       'Maximum 1% of Sanctioned Limit or Rs. 999 plus applicable GST, whichev',
     ],
     [
-      'Stamp Duty Rs. 200 plus applicable GST; e-stamped via DIGIO; Part of processing fee',
-      'Stamp Duty Rs. 200 plus applicable GST; e-stamped via DIGIO; exclusive of processing fee',
-    ],
-    [
-      'Lien Marking Charges Rs. 450 plus applicable GST; Part of processing fee',
-      'Lien Marking Charges Rs. 450 plus GST; exclusive of processing fee',
-    ],
-    [
-      'Lien Release / Removal Charges Rs. 100 plus applicable GST; Part of processing fee',
-      'Lien Release / Removal Charges Rs. 100 plus GST; exclusive of processing fee',
-    ],
-    [
-      'Lien Marking Charges Rs. 450 plus GST Included in processing fee Lien Release Charges Rs. 100 plus GST Included in processing fee',
-      'Lien Marking Charges Rs. 450 plus GST; exclusive of processing fee. Lien Release Charges Rs. 100 plus GST; exclusive of processing fee',
-    ],
-    [
-      'non-refundable and includes costs for stamp duty, lien marking, and lien removal charges',
-      'non-refundable. Stamp duty, lien marking charges of Rs. 450 plus GST, and lien release charges of Rs. 100 plus GST are exclusive of the processing fee',
-    ],
-    [
-      'includes costs for stamp duty, lien marking, and lien removal charges',
-      'Stamp duty, lien marking charges of Rs. 450 plus GST, and lien release charges of Rs. 100 plus GST are exclusive of the processing fee',
-    ],
-    [
-      'includes stamp duty, lien marking, and lien removal charges',
-      'Stamp duty, lien marking charges of Rs. 450 plus GST, and lien release charges of Rs. 100 plus GST are exclusive of the processing fee',
+      'Lien Marking Charges Rs. 450 plus applicable GST; Part of processing fee Lien Release',
+      'Lien Marking Charges Rs. 450 plus applicable GST; Lien Release',
     ],
   ];
 

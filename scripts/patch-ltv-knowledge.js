@@ -15,6 +15,8 @@ export function patchLtvInText(text) {
   const legacyFromDocx = [
     ['LTV: Equity MF Units 70% of current market value', `LTV: Equity MF Units ${EQUITY_LTV} of current market value`],
     ['LTV: Debt MF Units 80% of current market value', `LTV: Debt MF Units ${DEBT_LTV} of current market value`],
+    ['on SCCL ASL Up to 70% Eligible Debt', `on SCCL ASL Up to ${EQUITY_LTV} Eligible Debt`],
+    ['on SCCL ASL Up to 80% Ineligible ELSS', `on SCCL ASL Up to ${DEBT_LTV} Ineligible ELSS`],
     ['Debt funds: 80% LTV. All other fund types (equity): 70% LTV', `Debt funds: ${DEBT_LTV} LTV. All other fund types (equity): ${EQUITY_LTV} LTV`],
     ['All other fund types (equity): 70% LTV', `All other fund types (equity): ${EQUITY_LTV} LTV`],
     ['fund types (equity): 70% LTV', `fund types (equity): ${EQUITY_LTV} LTV`],

@@ -7,13 +7,41 @@ Simple answer: Processing fee is based on your sanctioned limit and is deducted 
 - More than 50 lakh: 0.5% of sanctioned limit
 
 Customer question: What is the minimum processing fee?
-Simple answer: For sanctioned amounts up to 10 lakh, the minimum processing fee is Rs. 999 plus GST (or 1% of the sanctioned limit, whichever is higher).
+Simple answer: For sanctioned amounts up to 10 lakh, the processing fee is 1% of the sanctioned limit or Rs. 999 plus GST, whichever is higher.
 
 Customer question: Are stamp duty and lien charges included in the processing fee?
-Simple answer: No. Stamp duty, lien marking charges of Rs. 450 plus GST, and lien release charges of Rs. 100 plus GST are exclusive of the processing fee — they are charged separately. You can find the exact details regarding your specific loan charges in your Key Fact Statement (KFS) and loan agreement.
+Simple answer: No. They are charged separately from the processing fee:
+- Stamp duty: Rs. 200 plus applicable GST, e-stamped via Digio (as per applicable state law)
+- Lien marking charges: Rs. 450 plus applicable GST (MF Central / RTA charges passed to the borrower, deducted upfront)
+- Lien release / removal charges: Rs. 100 plus applicable GST, charged at full or partial lien release
+- eStamping and eSign fee: Rs. 10 per agreement
 
-Customer question: What other upfront charges apply besides processing fee?
-Simple answer: In addition to the processing fee, separate charges may apply including stamp duty (as per applicable state law), lien marking charges of Rs. 450 plus GST, and lien release charges of Rs. 100 plus GST. These charges are exclusive of the processing fee. Applicable amounts are deducted upfront at disbursement where relevant and are disclosed in your KFS and loan agreement.
+Customer question: Is the processing fee refundable?
+Simple answer: No. The processing fee is deducted upfront from disbursement, is non-refundable, and is disclosed in your KFS.
+
+Customer question: Are lien removal charges applied again during the loan?
+Simple answer: Lien release / removal charges of Rs. 100 plus applicable GST also apply on a partial invoke or revoke during the loan tenure.
+
+Customer question: What is the bounce charge?
+Simple answer: Rs. 100 plus applicable GST per bounce. It is charged on each bounce, at both the first NACH presentation and the second presentation (T+5).
+
+Customer question: What are the penal charges?
+Simple answer: Penal charges are 36% per annum on unpaid (overdue) interest. Penal interest is computed on the delayed instalment amount only.
+
+Customer question: Are there pre-closure charges?
+Simple answer: No. Pre-closure charges are nil. You can close your loan early without any pre-closure charge.
+
+Customer question: Is there an eStamping and eSign fee?
+Simple answer: Yes. Rs. 10 per agreement for eStamping and eSign.
+
+Customer question: How much is stamp duty?
+Simple answer: Stamp duty is as per applicable state law (Rs. 200 plus tax for Tamil Nadu). It is computed by state and loan amount and deducted upfront.
+
+Customer question: Is there a renewal charge?
+Simple answer: Yes. An annual renewal charge of Rs. 999 applies if you choose to renew the loan.
+
+Customer question: Can Shriram Credit charge fees not listed in my KFS?
+Simple answer: No. All charges are disclosed in the Key Fact Statement (KFS) at sanction, and no charges may be levied that are not specified in the KFS, as per RBI Digital Lending Guidelines.
 
 Customer question: Where can I see my exact loan charges?
 Simple answer: You can find the exact details regarding your specific loan charges in your Key Fact Statement (KFS) and loan agreement.

@@ -1,0 +1,105 @@
+SHRIRAM CREDIT — LAMF Product Terms, Eligibility and KYC
+
+Product notes:
+- Product name: Loan Against Mutual Funds (LAMF)
+- Product category: Loan Against Securities (LAS), secured lending
+- Entity: Shriram Credit Company Limited (SCCL)
+- Product code: MF (used in Loan ID generation)
+- Facility type: multiple withdrawals permitted within the sanctioned limit up to the original tenure
+- Disbursement type: single or multiple disbursement
+- Minimum loan / sanction amount: Rs. 10,000
+- Maximum loan / sanction amount: Rs. 2,00,00,000 (Rs. 2 crores), equity and debt collateral combined. Higher amounts (more than Rs. 2 crores) are permissible with approval from the designated authority.
+- Minimum withdrawal amount: Rs. 5,000 (all withdrawals including the first, depending upon the charges)
+- Withdrawal limit: one withdrawal per day per customer
+- Loan amount rounding: rounded down to the nearest multiple of Rs. 100
+- Loan tenure: minimum 12 months, maximum 12 months
+- LTV: equity MF units 45% and debt MF units 75% of the current market value of pledged units
+- Interest rate: dynamic pricing in the range 9.5% to 15% per annum; at launch, fixed at 10.5% per annum
+- Interest accrual: on the withdrawn amount
+- Repayment: monthly; currently Balloon repayment only (interest monthly, principal at the end of the tenure)
+- Day count convention: 365 (Balloon, interest serving)
+- Gap day interest: collected during the first and last instalments
+- Pre-closure charges: nil
+- Bounce charges: Rs. 100 plus applicable GST per bounce, charged on both the first and second NACH presentation
+- Penal charges: 36% per annum on unpaid interest
+- Processing fee: up to Rs. 10 lakh sanctioned, maximum 1% of sanctioned limit or Rs. 999 plus GST, whichever is higher; Rs. 10 lakh to 50 lakh, 0.8%; above Rs. 50 lakh, 0.5%; deducted upfront
+- Stamp duty: Rs. 200 plus applicable GST, e-stamped via Digio
+- Lien marking charges: Rs. 450 plus applicable GST
+- Lien release / removal charges: Rs. 100 plus applicable GST, also on partial invoke or revoke during the tenure
+- NACH registration: 2 times the sanctioned amount or Rs. 1 crore, whichever is higher, for the entire tenure
+- Annual renewal charges: Rs. 999, if the customer opts to renew the loan
+- Customer ID format: first letter of the customer's first name followed by 7 digits in sequence
+- Loan ID format: SCCL + product (MF for LAMF) + application year + application month + 5-digit running series, for example SCCLMF20260600001
+- Customer support: lassupport@shriramcredit.in
+
+Customer question: What does my loan ID look like?
+Simple answer: Your loan ID starts with SCCL, followed by MF (for LAMF), the application year and month, and a 5-digit running number. For example: SCCLMF20260600001.
+
+Customer question: How can I make a payment?
+Simple answer: Your monthly interest is auto-debited through your registered NACH mandate. You can also pay through the SCCL website using UPI or net banking for ad-hoc payments, part payments, pre-closure, cooling-off closure, or paying an upcoming instalment early. Payments are accepted only from the bank account registered during your loan journey.
+
+Customer question: What happens if I default or my LTV breach is not cured?
+Simple answer: If you miss your monthly payments for two consecutive months, or an LTV breach is not cured for more than 5 working days from the day of the breach, SCCL may invoke the pledge and sell your pledged mutual fund units through MF Central to recover the dues.
+
+Customer question: When do I get my repayment schedule?
+Simple answer: An illustrative repayment schedule is generated at sanction. The actual schedule is generated when you initiate a withdrawal, and an updated schedule is generated for each subsequent withdrawal.
+
+Customer question: How can I contact customer support?
+Simple answer: You can email Shriram Credit LAMF support at lassupport@shriramcredit.in.
+
+Customer question: What is the minimum and maximum loan amount?
+Simple answer: The minimum loan or sanction amount is Rs. 10,000. The maximum is Rs. 2 crores, with equity and debt collateral combined. Amounts above Rs. 2 crores are possible with approval from the designated authority.
+
+Customer question: How many withdrawals can I make?
+Simple answer: You can make multiple withdrawals within your sanctioned limit up to the original tenure, limited to one withdrawal per day. Each withdrawal, including the first, must be at least Rs. 5,000.
+
+Customer question: Which mutual funds are eligible?
+Simple answer: Only schemes on SCCL's Approved Securities List (ASL), reviewed monthly by the Risk and Credit teams, are eligible at the time of pledge creation:
+- Equity mutual fund units: open-ended, no lock-in, registered with MF Central, on the SCCL ASL. LTV up to 45%.
+- Debt mutual fund units: open-ended debt schemes, no lock-in, registered with MF Central, on the SCCL ASL. LTV up to 75%.
+
+Customer question: Which mutual funds are not eligible?
+Simple answer: The following are not eligible:
+- ELSS units within the statutory 3-year lock-in under Section 80C (only units outside the lock-in are eligible)
+- Fixed Maturity Plans (FMPs): closed-ended, illiquid, no early redemption
+- Closed-ended mutual fund schemes: no daily liquidity
+- Gold ETFs and Silver ETFs: commodity-backed, SCCL policy exclusion
+- MF schemes with gold or silver as the underlying, such as Gold Savings Funds and Silver Fund of Funds
+
+Customer question: Who is eligible for LAMF?
+Simple answer: To be eligible, you must:
+- Be a resident Indian (NRIs are not eligible) and a tax resident of India
+- Be between 18 and 70 years old on the date of application
+- Be salaried or self-employed
+- Have a valid PAN (individual PAN, 4th character 'P') linked with Aadhaar
+- Complete Aadhaar OTP-based eKYC via DigiLocker and CKYC
+- Complete a liveness check with geotagging and face match
+- Have a bank account validated through penny drop
+- Hold mutual fund units in your single name, registered with MF Central (joint folios are not eligible)
+- Have an OTP-verified mobile number and email ID
+
+Customer question: Is my credit score checked?
+Simple answer: Yes. Your bureau credit score is checked after successful PAN validation and is used only for dynamic pricing. There is no minimum bureau score requirement. The bureau report is valid and reused for T+7 days from the trigger date, and re-trigger is configurable.
+
+Customer question: How is my KYC verified?
+Simple answer: KYC is completed digitally:
+- PAN verification: via PAN API. Status code 'E' is required and the 4th character must be 'P'. Name and date of birth are cross-validated against PAN.
+- PAN–Aadhaar linkage: seeding status 'Y' (operative) is required. 'R' (inoperative) results in failure.
+- eKYC (identity and address): via DigiLocker with Aadhaar OTP consent. Name and address are fetched from UIDAI and prefilled.
+- Liveness with geotagging and face match: matched against the eKYC photograph, within the Indian geofence, mandatory before document execution.
+- Gender: auto-fetched from PAN validation.
+- Bureau / credit check: score and trigger date stored and valid for T+15 days; re-trigger is configurable.
+- Bank account verification: penny drop. Name match of at least 60% across PAN, Aadhaar, and bank account is required.
+- eNACH / e-Mandate: NPCI NACH mandate registered for 2x the sanctioned amount (or Rs. 1 crore, whichever is higher) for the entire tenure.
+- FATCA: self-declaration of tax residency and US person status. India residency is required to proceed.
+- PEP (Politically Exposed Person): self-declaration. Only non-PEP customers are eligible.
+- Reason for loan and income: self-declaration of loan purpose, source of income, and income range.
+
+Customer question: Can NRIs apply for LAMF?
+Simple answer: No. LAMF is available to resident Indians only. NRIs and non-India tax residents are not eligible.
+
+Customer question: Can I use a joint mutual fund folio?
+Simple answer: No. Units must be in the borrower's single name and registered with MF Central. Joint folios are not eligible.
+
+Customer question: What is the age limit for LAMF?
+Simple answer: You must be at least 18 years and not more than 70 years old on the date of application.

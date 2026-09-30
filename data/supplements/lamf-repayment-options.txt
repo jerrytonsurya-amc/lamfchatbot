@@ -1,0 +1,28 @@
+SHRIRAM CREDIT — LAMF Repayment Options (Balloon Repayment)
+
+Customer question: What are the repayment options for a LAMF loan?
+Simple answer: Currently, LAMF is offered with Balloon repayment only. You pay interest only every month throughout the tenure, and the full outstanding principal is repaid as a lump sum at the end of the tenure.
+
+Customer question: Is EMI repayment available?
+Simple answer: Not at the moment. The LAMF program supports two repayment configurations (EMI or Balloon), but currently only Balloon repayment is offered.
+
+Customer question: What is balloon repayment?
+Simple answer: Under balloon repayment, you pay interest only each month during the loan period. The full outstanding principal is due as a lump sum at the end of the tenure.
+
+Customer question: Can I change my repayment type later?
+Simple answer: No. The repayment type is set at sanction, applies to all withdrawals under the limit, and cannot be changed mid-tenure.
+
+Customer question: How often do I repay?
+Simple answer: Repayment is monthly.
+
+Customer question: How is interest calculated?
+Simple answer: Interest accrues on the withdrawn amount. The day count convention for Balloon repayment (interest serving) is 365.
+
+Customer question: What is gap day interest?
+Simple answer: Gap day interest is interest for the period between the disbursement date and the first instalment due date. It is collected during the first and last instalments.
+
+Customer question: How will monthly payments be collected?
+Simple answer: Monthly interest payments are collected automatically from your verified bank account through the e-Mandate (NACH) set up during the journey. The NACH registration amount is 2 times the sanctioned amount or Rs. 1 crore, whichever is higher, and it is registered for the entire tenure. Only the amount due is debited. Please ensure sufficient balance on the due date.
+
+Customer question: What happens at the end of the tenure?
+Simple answer: With Balloon repayment, you repay the full outstanding principal at the end of the 12-month tenure as per your loan agreement and repayment schedule.

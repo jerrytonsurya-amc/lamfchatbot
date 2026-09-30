@@ -1,13 +1,13 @@
-SHRIRAM CREDIT — LAMF Repayment Tenure
+SHRIRAM CREDIT — LAMF Loan Tenure
 
 Customer question: What is the repayment tenure for LAMF?
-Simple answer: At launch, the LAMF repayment tenure is 12 months only.
+Simple answer: The LAMF loan tenure is 12 months. Both the minimum and maximum loan tenure are 12 months.
 
 Customer question: What loan tenure options are available?
-Simple answer: Currently, only a 12-month repayment tenure is available for LAMF. The tenure is confirmed at sanction and shown in your Key Fact Statement (KFS) and loan agreement.
+Simple answer: Only a 12-month loan tenure is available for LAMF. The tenure is confirmed at sanction and shown in your Key Fact Statement (KFS) and loan agreement.
 
 Customer question: Can I choose 6, 18, 24, or 36 months tenure?
-Simple answer: No. At this stage, LAMF is offered with a fixed 12-month repayment tenure only.
+Simple answer: No. LAMF is offered with a fixed 12-month loan tenure.
 
 Customer question: How does repayment work over the 12-month tenure?
-Simple answer: LAMF uses balloon repayment — you pay monthly interest during the 12-month tenure, and the full principal is due at the end of the tenure. Your exact schedule is shown in your KFS and loan agreement.
+Simple answer: Currently only Balloon repayment is offered. You pay interest only each month and repay the full principal at the end of the 12-month tenure. Your exact schedule is shown in your KFS and loan agreement.

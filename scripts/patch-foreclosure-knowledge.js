@@ -5,61 +5,50 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-const NO_FORECLOSURE_CHARGES =
-  'Pre-closure / Foreclosure Charges Nil. No foreclosure or pre-closure charges apply.';
-
-/** Remove 3% pre-closure / foreclosure charges from indexed knowledge. */
+/** Pre-closure charges are Nil at any time; part payments are not charged. */
 export function patchForeclosureInText(text) {
   let next = text;
 
   const replacements = [
     [
       'Pre-closure Charges 3% of outstanding principal if pre-closed within 3 months of first withdrawal date. Nil after 3 months',
-      NO_FORECLOSURE_CHARGES,
+      'Pre-closure Charges Nil',
     ],
     [
       'Pre-closure Charges 3% on principal outstanding if pre-closed within 3 months from first withdrawal date. Nil after 3 months.',
-      NO_FORECLOSURE_CHARGES,
+      'Pre-closure Charges Nil.',
     ],
     [
       'Pre-closure Charges 3% of outstanding principal Applicable only within 3 months of first withdrawal date. Nil thereafter.',
-      NO_FORECLOSURE_CHARGES,
+      'Pre-closure Charges Nil No charges',
     ],
     [
-      'Repayment: Pre-closure Pre-closure within 3 months (3% charge applicable)',
-      'Repayment: Pre-closure Pre-closure / foreclosure (no charges applicable)',
+      'Pre-closure within 3 months (3% charge applicable)',
+      'Pre-closure within 3 months (no charges)',
     ],
     [
-      'Repayment: Pre-closure Pre-closure after 3 months (no charges)',
-      'Repayment: Pre-closure Pre-closure / foreclosure (no charges applicable)',
+      'Closure Type Condition Charges Process Pre-closure (within 3 months) Pre-closed within 3 months from first withdrawal date. 3% of outstanding principal at time of pre-closure. Charge applied and collected. Pledge released proportionally or in full.',
+      'Closure Type Condition Charges Process Pre-closure (within 3 months) Pre-closed within 3 months from first withdrawal date. Nil. No charges. Pledge released. Account closed.',
     ],
     [
-      'Pre-closure (within 3 months) Pre-closed within 3 months from first withdrawal date. 3% of outstanding principal at time of pre-closure. Charge applied and collected. Pledge released proportionally or in full. Pre-closure (after 3 months) Pre-closed after 3 months from first withdrawal date. Nil. No charges. Pledge released. Account closed.',
-      'Pre-closure / Foreclosure Full loan repayment before end of tenure. Nil foreclosure or pre-closure charges. Pledge released. Account closed.',
+      'Part Payment Partial repayment of principal before maturity. 3% on future principal paid if within 3 months. Nil after 3 months. EMI reduction applied. Tenure unchanged. Updated RPS generated and sent to customer via email. ',
+      '',
     ],
     [
-      'Part payment within 3 months from first withdrawal date attracts 3% charge on future principal outstanding. Charges not applicable after 3 months.',
-      'Part payment before maturity. No foreclosure or pre-closure charges apply.',
+      'Part payment within 3 months from first withdrawal date attracts 3% charge on future principal outstanding paid. Charges not applicable after 3 months.',
+      'No charges apply on part payment.',
     ],
     [
       '3% charge on future principal paid if within 3 months from first withdrawal.',
-      'No foreclosure or pre-closure charges on part payment.',
+      'No charges apply on part payment.',
     ],
     [
-      'Part Payment Partial repayment of principal before maturity. 3% on future principal paid if within 3 months. Nil after 3 months.',
-      'Part Payment Partial repayment of principal before maturity. Nil foreclosure or pre-closure charges.',
-    ],
-    [
-      'Part payment & Pre-closure without charge within 3 months 3% charge within 3 months.',
-      'Part payment & Pre-closure No foreclosure or pre-closure charges.',
+      'Part payment & Pre-closure without charge within 3 months 3% charge within 3 months. Business Head Case-by-case documented. ',
+      '',
     ],
     [
       'Can I repay the loan early? Early repayment may be allowed as per the loan terms. Please check the agreement for any process or charges.',
-      'Can I repay the loan early? Yes. Early repayment or foreclosure is allowed as per your loan terms. Shriram Credit LAMF does not charge any foreclosure or pre-closure fees. Please check your loan agreement for the repayment process.',
-    ],
-    [
-      'repayment type and foreclosure charges',
-      'repayment type and other loan terms',
+      'Can I repay the loan early? Yes. You can pre-close the loan at any time and there are no pre-closure charges. Please check your KFS and loan agreement.',
     ],
   ];
 

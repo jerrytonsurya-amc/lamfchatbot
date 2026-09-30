@@ -5,31 +5,39 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-/** Replace dynamic pricing references with risk-based pricing. */
+/** Dynamic pricing (9.5%–15% p.a.) with a fixed 10.5% p.a. rate at launch. */
 export function patchPricingInText(text) {
   let next = text;
 
+  next = next.replace(
+    /Interest Rate (?:Risk-based|Dynamic) pricing in range 9\.5%–15% per annum(?! Interest Rate \(Launch\))/g,
+    'Interest Rate Dynamic pricing in range 9.5%–15% per annum Interest Rate (Launch) Fixed – 10.5% per annum'
+  );
+  next = next.replace(
+    /Rate once sanctioned is fixed for the loan tenure and is not revised mid-tenure\.(?! At launch)/g,
+    'Rate once sanctioned is fixed for the loan tenure and is not revised mid-tenure. At launch, a fixed interest rate of 10.5% per annum applies.'
+  );
+
   const replacements = [
-    ['Interest Rate Dynamic pricing in range 9.5%–15% per annum', 'Interest Rate Risk-based pricing in range 9.5%–15% per annum'],
-    ['Interest Rate Dynamic pricing in range 9.5% to 15% per annum', 'Interest Rate Risk-based pricing in range 9.5% to 15% per annum'],
-    ['* Dynamic pricing Processing fee', '* Risk-based pricing Processing fee'],
+    ['* Risk-based pricing Processing fee', '* Dynamic pricing Processing fee'],
     [
-      'SCCL is offering a dynamic pricing model for LAMF. Under the dynamic model, the applicable interest rate will fall within the range of 9.5% to 15% per annum, determined at origination based on the following three parameters:',
+      'SCCL is offering a risk-based pricing model for LAMF. Under risk-based pricing, the applicable interest rate',
+      'SCCL is offering a dynamic pricing model for LAMF. Under the dynamic model, the applicable interest rate',
+    ],
+    [
       'SCCL uses a risk-based pricing model for LAMF. Under risk-based pricing, the applicable interest rate will fall within the range of 9.5% to 15% per annum, determined at origination based on the following risk parameters:',
+      'SCCL is offering a dynamic pricing model for LAMF. Under the dynamic model, the applicable interest rate will fall within the range of 9.5% to 15% per annum, determined at origination based on the following three parameters:',
     ],
     [
+      'Bureau score will be considered for Risk-based pricing – Refer Risk-based pricing policy document',
       'Bureau score will be considered for Dynamic pricing – Refer Dynamic pricing policy document',
-      'Bureau score will be considered for risk-based pricing – Refer risk-based pricing policy document',
     ],
     [
-      'As dynamic pricing is activated, the spread is expected to widen for lower-quality or higher-risk borrower profiles.',
       'Under risk-based pricing, the spread may vary for lower-quality or higher-risk borrower profiles.',
+      'As dynamic pricing is activated, the spread is expected to widen for lower-quality or higher-risk borrower profiles.',
     ],
-    ['dynamic pricing model', 'risk-based pricing model'],
-    ['Dynamic pricing model', 'Risk-based pricing model'],
-    ['dynamic pricing', 'risk-based pricing'],
-    ['Dynamic pricing', 'Risk-based pricing'],
-    ['Under the dynamic model', 'Under risk-based pricing'],
+    ['risk-based pricing', 'dynamic pricing'],
+    ['Risk-based pricing', 'Dynamic pricing'],
   ];
 
   for (const [from, to] of replacements) {

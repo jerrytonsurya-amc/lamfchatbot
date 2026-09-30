@@ -5,33 +5,22 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-const TENURE_12_ONLY =
-  'Loan Tenure 12 months only. At launch, the repayment tenure is fixed at 12 months.';
-
-/** Limit indexed knowledge to 12-month repayment tenure at launch. */
+/** Minimum and maximum loan tenure are both 12 months. */
 export function patchTenureInText(text) {
   let next = text;
 
   const replacements = [
     [
       'Minimum Loan Tenure 6 months Maximum Loan Tenure 36 months (customer selects 6, 12, 18, or 24, 30, 36 months)',
-      TENURE_12_ONLY,
+      'Minimum Loan Tenure 12 months Maximum Loan Tenure 12 months',
     ],
     [
-      'Customer selects tenure (6, 12, 18, 24, 30, 36 months). At launch, repayment is balloon (interest-only monthly payments; principal at end of tenure) only. The repayment type selected at sanction applies to all withdrawals under the limit',
-      'Loan tenure is 12 months only at launch. Repayment is balloon (interest-only monthly payments; principal at end of tenure). The repayment type selected at sanction applies to all withdrawals under the limit',
+      'Customer selects tenure (6, 12, 18, 24, 30, 36 months) and repayment type (EMI or Balloon).',
+      'Loan tenure is 12 months. Repayment type is Balloon (currently the only repayment type offered).',
     ],
     [
-      'Customer selects tenure (6, 12, 18, 24, 30, 36 months) and repayment type (EMI or Balloon). Repayment type selected applies to all withdrawals under the limit',
-      'Loan tenure is 12 months only at launch. Repayment is balloon (interest-only monthly payments; principal at end of tenure). The repayment type selected at sanction applies to all withdrawals under the limit',
-    ],
-    [
-      '2.4 Customer selects tenure (6, 12, 18, 24, 30, 36 months). At launch, repayment is balloon (interest-only monthly payments; principal at end of tenure) only. The repayment type selected at sanction applies to all withdrawals under the limit',
-      '2.4 Loan tenure is 12 months only at launch. Repayment is balloon (interest-only monthly payments; principal at end of tenure). The repayment type selected at sanction applies to all withdrawals under the limit',
-    ],
-    [
-      'Then choose the loan period. At launch, repayment is balloon (interest-only) only.',
-      'The loan tenure is 12 months at launch. Repayment is balloon (interest-only) only.',
+      'Then choose the loan period and repayment option.',
+      'The loan tenure is 12 months, with Balloon repayment (monthly interest, principal at the end of the tenure).',
     ],
     [
       'ranges from a minimum of 6 months to a maximum of 36 months',
