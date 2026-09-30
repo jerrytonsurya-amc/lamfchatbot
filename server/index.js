@@ -3,6 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { generateAnswer } from './gemini.js';
 import { getIndexStats } from './rag.js';
+import { getAdminLeads, isValidAdminPassword } from './admin.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
@@ -36,6 +37,21 @@ app.post('/api/chat', async (req, res) => {
       error: 'Failed to generate response',
       details: err.message,
     });
+  }
+});
+
+app.post('/api/admin/leads', async (req, res) => {
+  if (!isValidAdminPassword(req.body?.password)) {
+    return res.status(401).json({ error: 'Incorrect password' });
+  }
+
+  try {
+    const leads = await getAdminLeads();
+    res.set('Cache-Control', 'no-store');
+    res.json({ leads, generatedAt: new Date().toISOString() });
+  } catch (err) {
+    console.error('Admin leads error:', err);
+    res.status(500).json({ error: 'Failed to load leads', details: err.message });
   }
 });
 

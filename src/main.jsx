@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import EmbedApp from './EmbedApp';
 import PreviewApp from './PreviewApp';
+import AdminApp from './AdminApp';
 import './index.css';
 
 const path = window.location.pathname.replace(/\/$/, '') || '/';
 
 function Root() {
+  if (path === '/admin') return <AdminApp />;
   if (path === '/embed') return <EmbedApp />;
   if (path === '/preview') return <PreviewApp />;
   return <App />;
