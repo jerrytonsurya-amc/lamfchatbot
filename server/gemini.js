@@ -19,10 +19,15 @@ import {
   detectAdditionalPledgeQuestion,
   getAdditionalPledgeInstruction,
   ADDITIONAL_PLEDGE_CONTEXT,
+  detectApplyIntent,
+  getApplyInstruction,
+  APPLY_URL,
+  APPLY_LINK_MARKDOWN,
 } from '../shared/companyGuard.js';
 import { COMPANY } from '../shared/company.js';
 
 const STOCKS_CLARIFICATION_SOURCE = 'lamf-stocks-clarification.txt';
+const ADDITIONAL_PLEDGE_SOURCE = 'lamf-additional-pledge.txt';
 
 const SYSTEM_PROMPT = `You are the Shriram Credit LAMF AI Assistant for Shriram Credit Company Limited's LAMF (Loan Against Mutual Funds) program.
 
@@ -49,7 +54,7 @@ Content rules:
 4. Use UK English when mirroring voicebot phrasing from the context.
 5. Read all context excerpts before answering; merge facts into one cohesive reply.
 6. Do NOT mention stocks, shares, or Loan Against Shares unless the user's question itself mentions them.
-7. If the user asks about additional pledge, pledging more units, or adding collateral, clearly state that additional pledge is not available right now. Do not describe steps to add units via MF Central.
+7. Do NOT mention additional pledge, adding more units, or increasing the loan later unless the user's question itself asks about it.
 
 Greetings only (when the user says hi/hello):
 - Reply warmly in one or two short sentences.
@@ -102,7 +107,7 @@ function resolveCurrentDateTime(currentDateTime) {
 export async function generateAnswer(question, history = [], currentDateTime = null) {
   const trimmed = question.trim();
   const nowLabel = resolveCurrentDateTime(currentDateTime);
-  const cacheKey = `v20:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
+  const cacheKey = `v21:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
   const cached = getCachedAnswer(cacheKey);
   if (cached) return cached;
 
@@ -126,14 +131,16 @@ export async function generateAnswer(question, history = [], currentDateTime = n
 
   const stocksMentioned = detectStocksMention(trimmed);
   const additionalPledgeAsked = detectAdditionalPledgeQuestion(trimmed);
+  const applyIntent = detectApplyIntent(trimmed);
 
   const chunks = await retrieveRelevantChunks(question, config.maxContextChunks);
   let context = chunks._context || buildContext(chunks);
-  if (!stocksMentioned) {
-    const withoutStocksFaq = chunks.filter((chunk) => chunk.source !== STOCKS_CLARIFICATION_SOURCE);
-    if (withoutStocksFaq.length !== chunks.length) {
-      context = buildContext(withoutStocksFaq);
-    }
+  const hiddenSources = new Set();
+  if (!stocksMentioned) hiddenSources.add(STOCKS_CLARIFICATION_SOURCE);
+  if (!additionalPledgeAsked) hiddenSources.add(ADDITIONAL_PLEDGE_SOURCE);
+  const visibleChunks = chunks.filter((chunk) => !hiddenSources.has(chunk.source));
+  if (visibleChunks.length !== chunks.length) {
+    context = buildContext(visibleChunks);
   }
   if (stocksMentioned) {
     context = `${STOCKS_CLARIFICATION_CONTEXT}\n\n${context}`;
@@ -151,7 +158,7 @@ export async function generateAnswer(question, history = [], currentDateTime = n
   const prompt = `${SYSTEM_PROMPT}
 
 CURRENT DATE AND TIME: ${nowLabel}
-${stocksMentioned ? `\n${getStocksClarificationInstruction()}\n` : ''}${additionalPledgeAsked ? `\n${getAdditionalPledgeInstruction()}\n` : ''}
+${stocksMentioned ? `\n${getStocksClarificationInstruction()}\n` : ''}${additionalPledgeAsked ? `\n${getAdditionalPledgeInstruction()}\n` : ''}${applyIntent ? `\n${getApplyInstruction()}\n` : ''}
 CONTEXT:
 ${context}
 ${historyText ? `\nPRIOR MESSAGES:\n${historyText}\n` : ''}
@@ -162,6 +169,9 @@ Answer:`;
   try {
     let answer = await withRetry(() => generateWithModel(modelName, prompt));
     answer = polishCustomerAnswer(answer);
+    if (applyIntent && !answer.includes(APPLY_URL)) {
+      answer = `${answer}\n\nYou can apply online here: ${APPLY_LINK_MARKDOWN}`;
+    }
     const result = {
       answer,
       sources: [],

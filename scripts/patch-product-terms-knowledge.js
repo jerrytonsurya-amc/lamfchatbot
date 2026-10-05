@@ -5,9 +5,9 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
-const NACH_AMOUNT = '2 times the sanctioned amount or Rs. 1 crore, whichever is higher';
+const NACH_AMOUNT = '2 times the sanctioned amount or Rs. 1 crore, whichever is lower';
 
-/** Bounce Rs. 100 + GST on each presentation, penal charges, NACH, eligibility/KYC, LOS config, renewal charge. */
+/** Bounce Rs. 100 per instance, penal charges, NACH, eligibility/KYC, LOS config, renewal charge. */
 export function patchProductTermsInText(text) {
   let next = text;
 
@@ -18,20 +18,22 @@ export function patchProductTermsInText(text) {
     ],
     [
       'Bounce charge of Rs. 1,000 plus applicable GST is applied only if the second presentation (1.b) also bounces. No charge is applied if the first presentation bounces but the second presentation at T+5 is realised.',
-      'Bounce charge of Rs. 100 plus applicable GST is applied on each bounce, at both the first presentation (1.a) and the second presentation (1.b).',
+      'Bounce charge of Rs. 100 per instance is applied on each bounce, at both the first presentation (1.a) and the second presentation (1.b).',
     ],
     [
       'Bounce Charges Rs. 1,000 plus GST per qualifying bounce Applicable on second presentation bounce only.',
-      'Bounce Charges Rs. 100 plus GST per bounce Applicable on both the first and second presentation bounce.',
+      'Bounce Charges Rs. 100 per instance Applicable on both the first and second presentation bounce.',
     ],
     [
       'Bounce Charges Rs. 1,000 plus applicable GST per qualifying bounce Applied only when second NACH presentation (T+5) also bounces. No charge if first bounce and second presentation realised.',
-      'Bounce Charges Rs. 100 plus applicable GST per bounce Applied on both the presentations (first presentation and second presentation at T+5).',
+      'Bounce Charges Rs. 100 per instance Applied on both the presentations (first presentation and second presentation at T+5).',
     ],
-    ['Bounce Charges Rs. 1,000 plus applicable GST', 'Bounce Charges Rs. 100 plus applicable GST'],
-    ['Bounce charge of Rs. 1,000 plus applicable GST', 'Bounce charge of Rs. 100 plus applicable GST'],
-    ['Bounce Charges Rs. 1,000 plus GST', 'Bounce Charges Rs. 100 plus GST'],
-    ['Bounce charge of 1000 + GST per bounce', 'Bounce charge of Rs. 100 + GST per bounce'],
+    ['Bounce Charges Rs. 1,000 plus applicable GST per bounce event', 'Bounce Charges Rs. 100 per instance'],
+    ['Bounce Charges Rs. 1,000 plus applicable GST per dishonour.', 'Bounce Charges Rs. 100 per instance.'],
+    ['Bounce Charges Rs. 1,000 plus applicable GST', 'Bounce Charges Rs. 100 per instance'],
+    ['Bounce charge of Rs. 1,000 plus applicable GST', 'Bounce charge of Rs. 100 per instance'],
+    ['Bounce Charges Rs. 1,000 plus GST', 'Bounce Charges Rs. 100 per instance'],
+    ['Bounce charge of 1000 + GST per bounce', 'Bounce charge of Rs. 100 per instance'],
 
     ['Penal Charges 36% per annum on overdue interest (ODI)', 'Penal Charges 36% per annum on unpaid interest'],
 
@@ -44,19 +46,19 @@ export function patchProductTermsInText(text) {
     ],
     [
       'Amount = 2x sanctioned amount. Period = tenure + 12 months.',
-      'Amount = 2x sanctioned amount or Rs. 1 crore, whichever is higher. Period = Entire tenure.',
+      'Amount = 2x sanctioned amount or Rs. 1 crore, whichever is lower. Period = Entire tenure.',
     ],
     [
       'NACH registration amount = 2x sanctioned amount. NACH registration period = actual sanctioned tenure + 12 months.',
-      'NACH registration amount = 2x sanctioned amount or Rs. 1 crore, whichever is higher. NACH registration period = entire tenure.',
+      'NACH registration amount = 2x sanctioned amount or Rs. 1 crore, whichever is lower. NACH registration period = entire tenure.',
     ],
     [
       'Mandate amount = 2x sanctioned amount.',
-      'Mandate amount = 2x sanctioned amount or Rs. 1 crore, whichever is higher.',
+      'Mandate amount = 2x sanctioned amount or Rs. 1 crore, whichever is lower.',
     ],
     [
       'The maximum mandate amount is set at twice the sanctioned amount.',
-      'The maximum mandate amount is set at twice the sanctioned amount or Rs. 1 crore, whichever is higher.',
+      'The maximum mandate amount is set at twice the sanctioned amount or Rs. 1 crore, whichever is lower.',
     ],
 
     [

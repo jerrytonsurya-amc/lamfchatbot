@@ -22,7 +22,7 @@ Customer question: What is gap day interest?
 Simple answer: Gap day interest is interest for the period between the disbursement date and the first instalment due date. It is collected during the first and last instalments.
 
 Customer question: How will monthly payments be collected?
-Simple answer: Monthly interest payments are collected automatically from your verified bank account through the e-Mandate (NACH) set up during the journey. The NACH registration amount is 2 times the sanctioned amount or Rs. 1 crore, whichever is higher, and it is registered for the entire tenure. Only the amount due is debited. Please ensure sufficient balance on the due date.
+Simple answer: Monthly interest payments are collected automatically from your verified bank account through the e-Mandate (NACH) set up during the journey. The NACH registration amount is 2 times the sanctioned amount or Rs. 1 crore, whichever is lower, and it is registered for the entire tenure. Only the amount due is debited. Please ensure sufficient balance on the due date.
 
 Customer question: What happens at the end of the tenure?
 Simple answer: With Balloon repayment, you repay the full outstanding principal at the end of the 12-month tenure as per your loan agreement and repayment schedule.

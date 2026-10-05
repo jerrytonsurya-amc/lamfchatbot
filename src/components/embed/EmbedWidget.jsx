@@ -19,6 +19,10 @@ import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/
 import { BotIcon } from '../ChatAvatars';
 import './EmbedWidget.css';
 
+const markdownComponents = {
+  a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
+};
+
 function EmbedBubble({ role, content, isLoading }) {
   const isUser = role === 'user';
 
@@ -34,7 +38,9 @@ function EmbedBubble({ role, content, isLoading }) {
         ) : isUser ? (
           <p>{content}</p>
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {content}
+          </ReactMarkdown>
         )}
       </div>
     </div>

@@ -19,7 +19,14 @@ export function patchProcessingFeesInText(text) {
       'Lien Marking Charges Rs. 450 plus GST Included in processing fee Lien Release Charges Rs. 100 plus GST Included in processing fee. In case of partial release, or invoke collected/adjusted at the backend ',
       '',
     ],
-    ['Digio eStamping and eSign Fee Rs. 10 per agreement (Digio DDE service fee) Digio per-agreement fee', 'eStamping and eSign Fee Rs. 10 per agreement (Digio DDE service fee) per-agreement fee'],
+    [
+      'Digio eStamping and eSign Fee Rs. 10 per agreement (Digio DDE service fee) Digio per-agreement fee for eStamping and eSign for individual borrowers. ',
+      '',
+    ],
+    [
+      'eStamping and eSign DIGIO Rs. 10 per agreement (DDE service fee).',
+      'eStamping and eSign DIGIO Rs. 10 per agreement (DDE service fee), borne by SCCL and not charged to the borrower.',
+    ],
     ['computed by state and loan amount; deducted upfront via Digio.', 'computed by state and loan amount; deducted upfront.'],
     [
       'Maximum 1% of Sanctioned Limit or 1500 whichever is higher',

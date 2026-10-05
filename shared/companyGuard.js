@@ -31,6 +31,28 @@ export const STOCKS_CLARIFICATION_CONTEXT =
   'Simple answer: No. Shriram Credit LAMF provides loans only against eligible mutual fund units — not against individual stocks or equity shares. ' +
   'This product does not offer Loan Against Shares. If you hold eligible mutual funds, LTV applies to those units (45% for equity mutual funds and 75% for debt mutual funds).';
 
+export const APPLY_URL = 'https://lamf.shriramcredit.in/?source=chatbot';
+export const APPLY_LINK_MARKDOWN = `[Apply for a Loan Against Mutual Funds](${APPLY_URL})`;
+
+/** User wants to apply, start, or get a loan against mutual funds. */
+export function detectApplyIntent(query) {
+  const lower = query.toLowerCase().replace(/\s+/g, ' ');
+  return (
+    /\b(apply|applying|application|sign ?up|register|onboard\w*|get started|avail)\b/.test(lower) ||
+    /\b(start|begin|open)\b.{0,20}\b(loan|journey|account|process)\b/.test(lower) ||
+    /\b(how|where) (do|can|should) i (get|take|start|begin)\b/.test(lower) ||
+    /\b(i )?(want|need|would like|looking for|interested in)\b.{0,25}\b(loan|lamf|credit|funds?)\b/.test(lower) ||
+    /\b(am i eligible|check (my )?eligibility|interested|proceed)\b/.test(lower)
+  );
+}
+
+export function getApplyInstruction() {
+  return (
+    'APPLY LINK (required): The user wants to apply or get started. ' +
+    `After answering, invite them to apply online using this exact markdown link: ${APPLY_LINK_MARKDOWN}`
+  );
+}
+
 export function detectAdditionalPledgeQuestion(query) {
   const lower = query.toLowerCase().replace(/\s+/g, ' ');
   return (

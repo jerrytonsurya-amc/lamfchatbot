@@ -263,6 +263,12 @@
   margin-bottom: 0;
 }
 
+.embed-bubble.assistant .embed-bubble-body a {
+  color: var(--lamf-gold-dark);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 .embed-bubble-body ul,
 .embed-bubble-body ol {
   margin: 6px 0;

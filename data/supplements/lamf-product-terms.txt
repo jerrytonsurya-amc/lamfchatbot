@@ -20,17 +20,21 @@ Product notes:
 - Day count convention: 365 (Balloon, interest serving)
 - Gap day interest: collected during the first and last instalments
 - Pre-closure charges: nil
-- Bounce charges: Rs. 100 plus applicable GST per bounce, charged on both the first and second NACH presentation
+- Bounce charges: Rs. 100 per instance, charged on both the first and second NACH presentation
 - Penal charges: 36% per annum on unpaid interest
 - Processing fee: up to Rs. 10 lakh sanctioned, maximum 1% of sanctioned limit or Rs. 999 plus GST, whichever is higher; Rs. 10 lakh to 50 lakh, 0.8%; above Rs. 50 lakh, 0.5%; deducted upfront
 - Stamp duty: Rs. 200 plus applicable GST, e-stamped via Digio
 - Lien marking charges: Rs. 450 plus applicable GST
 - Lien release / removal charges: Rs. 100 plus applicable GST, also on partial invoke or revoke during the tenure
-- NACH registration: 2 times the sanctioned amount or Rs. 1 crore, whichever is higher, for the entire tenure
+- NACH registration: 2 times the sanctioned amount or Rs. 1 crore, whichever is lower, for the entire tenure
+- eStamping and eSign fee: none for borrowers (only the applicable state stamp duty)
 - Annual renewal charges: Rs. 999, if the customer opts to renew the loan
 - Customer ID format: first letter of the customer's first name followed by 7 digits in sequence
 - Loan ID format: SCCL + product (MF for LAMF) + application year + application month + 5-digit running series, for example SCCLMF20260600001
 - Customer support: lassupport@shriramcredit.in
+
+Customer question: How do I apply for a Loan Against Mutual Funds?
+Simple answer: You can apply online in a 100% paperless journey: check your eligibility, credit limit and interest rate; select the mutual fund units to pledge; complete KYC; pledge the units; e-Sign the loan agreement; and then withdraw funds as needed. Apply here: [Apply for a Loan Against Mutual Funds](https://lamf.shriramcredit.in/?source=chatbot)
 
 Customer question: What does my loan ID look like?
 Simple answer: Your loan ID starts with SCCL, followed by MF (for LAMF), the application year and month, and a 5-digit running number. For example: SCCLMF20260600001.
@@ -90,7 +94,7 @@ Simple answer: KYC is completed digitally:
 - Gender: auto-fetched from PAN validation.
 - Bureau / credit check: score and trigger date stored and valid for T+15 days; re-trigger is configurable.
 - Bank account verification: penny drop. Name match of at least 60% across PAN, Aadhaar, and bank account is required.
-- eNACH / e-Mandate: NPCI NACH mandate registered for 2x the sanctioned amount (or Rs. 1 crore, whichever is higher) for the entire tenure.
+- eNACH / e-Mandate: NPCI NACH mandate registered for 2x the sanctioned amount (or Rs. 1 crore, whichever is lower) for the entire tenure.
 - FATCA: self-declaration of tax residency and US person status. India residency is required to proceed.
 - PEP (Politically Exposed Person): self-declaration. Only non-PEP customers are eligible.
 - Reason for loan and income: self-declaration of loan purpose, source of income, and income range.

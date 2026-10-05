@@ -14,7 +14,6 @@ Simple answer: No. They are charged separately from the processing fee:
 - Stamp duty: Rs. 200 plus applicable GST, e-stamped via Digio (as per applicable state law)
 - Lien marking charges: Rs. 450 plus applicable GST (MF Central / RTA charges passed to the borrower, deducted upfront)
 - Lien release / removal charges: Rs. 100 plus applicable GST, charged at full or partial lien release
-- eStamping and eSign fee: Rs. 10 per agreement
 
 Customer question: Is the processing fee refundable?
 Simple answer: No. The processing fee is deducted upfront from disbursement, is non-refundable, and is disclosed in your KFS.
@@ -23,7 +22,7 @@ Customer question: Are lien removal charges applied again during the loan?
 Simple answer: Lien release / removal charges of Rs. 100 plus applicable GST also apply on a partial invoke or revoke during the loan tenure.
 
 Customer question: What is the bounce charge?
-Simple answer: Rs. 100 plus applicable GST per bounce. It is charged on each bounce, at both the first NACH presentation and the second presentation (T+5).
+Simple answer: Rs. 100 per instance. It is charged on each bounce, at both the first NACH presentation and the second presentation (T+5).
 
 Customer question: What are the penal charges?
 Simple answer: Penal charges are 36% per annum on unpaid (overdue) interest. Penal interest is computed on the delayed instalment amount only.
@@ -32,7 +31,7 @@ Customer question: Are there pre-closure charges?
 Simple answer: No. Pre-closure charges are nil. You can close your loan early without any pre-closure charge.
 
 Customer question: Is there an eStamping and eSign fee?
-Simple answer: Yes. Rs. 10 per agreement for eStamping and eSign.
+Simple answer: No. There is no separate eStamping and eSign fee for borrowers. Only the applicable state stamp duty is charged.
 
 Customer question: How much is stamp duty?
 Simple answer: Stamp duty is as per applicable state law (Rs. 200 plus tax for Tamil Nadu). It is computed by state and loan amount and deducted upfront.
