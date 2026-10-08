@@ -13,6 +13,7 @@ import { patchTenureInText } from '../scripts/patch-tenure-knowledge.js';
 import { patchAdditionalPledgeInText } from '../scripts/patch-additional-pledge-knowledge.js';
 import { patchProductTermsInText } from '../scripts/patch-product-terms-knowledge.js';
 import { patchRemoveRiskComfortInText } from '../scripts/patch-remove-risk-comfort-knowledge.js';
+import { patchLtvBreachInText } from '../scripts/patch-ltv-breach-knowledge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -185,6 +186,7 @@ async function ingestDocx(filePath, category) {
   text = patchAdditionalPledgeInText(text);
   text = patchProductTermsInText(text);
   text = patchRemoveRiskComfortInText(text);
+  text = patchLtvBreachInText(text);
   const chunks = chunkText(text, source, category, COMPANY);
   console.log(`  -> ${chunks.length} chunks (${text.length} chars)`);
   return chunks;

@@ -12,13 +12,13 @@ Equity Funds (including hybrid funds treated as equity):
 - Comfortable: up to 45% — no action required.
 - Monitor: above 45% up to 48% — monitor loan and collateral value.
 - Action Required: above 48% up to 49% — pledge additional eligible MF units or make a partial repayment.
-- Critical: 49% and above — immediate action required; pledged units may be eligible for invocation if not regularised within the applicable timeline.
+- Critical: 49% and above — immediate action required. If the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions.
 
 Debt Funds:
 - Comfortable: up to 75% — no action required.
 - Monitor: above 75% up to 78% — monitor loan and collateral value.
 - Action Required: above 78% up to 83% — pledge additional eligible MF units or make a partial repayment.
-- Critical: 83% and above — immediate action required; pledged units may be eligible for invocation if not regularised within the applicable timeline.
+- Critical: 83% and above — immediate action required. If the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions.
 
 Customer question: What is Collateral Comfort?
 Simple answer: Collateral Comfort shows how comfortably your current loan is supported by the value of your pledged mutual fund investments. It uses your latest loan outstanding, mutual fund NAV, and applicable LTV limits (45% for equity and hybrid funds treated as equity, 75% for debt). It is recalculated whenever your loan outstanding or collateral value changes.
@@ -36,7 +36,7 @@ Customer question: What does Action Required mean for Collateral Comfort?
 Simple answer: Your loan has reached a level where corrective action is required (equity: LTV above 48% up to 49%; debt: above 78% up to 83%). You need to either pledge additional eligible mutual fund units through MF Central, or make a partial repayment. You will receive SMS and email with loan outstanding, collateral value, LTV, applicable limit, shortfall amount, and actions to regularise.
 
 Customer question: What does Critical Collateral Comfort mean?
-Simple answer: Your loan is at the critical LTV level (equity: 49% or above; debt: 83% or above). Immediate corrective action is required. If the required amount is not regularised within the applicable timeline, your pledged units may be eligible for invocation as per the applicable terms and conditions.
+Simple answer: Your loan is at the critical LTV level (equity: 49% or above; debt: 83% or above). Immediate corrective action is required. If the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions.
 
 Customer question: How is my LTV calculated?
 Simple answer: LTV = Loan Outstanding ÷ Applicable Collateral Value × 100. The applicable collateral value uses the latest available NAV of your pledged mutual fund units and applicable valuation rules. Collateral Comfort is recalculated dynamically when loan outstanding or collateral value changes.
@@ -48,7 +48,7 @@ Customer question: What happens when Action Required is triggered?
 Simple answer: You receive SMS and email showing current loan outstanding, collateral value, current LTV, applicable LTV limit, shortfall amount, and action required. You can regularise by pledging additional eligible mutual fund units through MF Central or by making a partial repayment. Collateral Comfort is then recalculated using the latest values.
 
 Customer question: What happens if LTV reaches the Critical level?
-Simple answer: Immediate corrective action is required. Invocation may be initiated if you have defaulted on 2 consecutive EMIs, or if an LTV breach has not been regularised within T+5 working days.
+Simple answer: For equity funds, critical is 49% and above; for debt funds, 83% and above. Immediate corrective action is required. If the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions. Invocation may also be initiated if you have defaulted on 2 consecutive EMIs, or if an LTV breach is not regularised.
 
 Customer question: What is invocation?
 Simple answer: Invocation means Shriram Credit (SCCL) redeems the pledged mutual fund units through MF Central to recover the outstanding loan dues.

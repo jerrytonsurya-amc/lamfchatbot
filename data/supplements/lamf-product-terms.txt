@@ -43,7 +43,7 @@ Customer question: How can I make a payment?
 Simple answer: Your monthly interest is auto-debited through your registered NACH mandate. You can also pay through the SCCL website using UPI or net banking for ad-hoc payments, part payments, pre-closure, cooling-off closure, or paying an upcoming instalment early. Payments are accepted only from the bank account registered during your loan journey.
 
 Customer question: What happens if I default or my LTV breach is not cured?
-Simple answer: If you miss your monthly payments for two consecutive months, or an LTV breach is not cured for more than 5 working days from the day of the breach, SCCL may invoke the pledge and sell your pledged mutual fund units through MF Central to recover the dues.
+Simple answer: If you miss your monthly payments for two consecutive months, or an LTV breach is not regularised, SCCL may invoke the pledge and sell your pledged mutual fund units through MF Central to recover the dues. At critical Collateral Comfort (49% and above for equity, 83% and above for debt), if the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions.
 
 Customer question: When do I get my repayment schedule?
 Simple answer: An illustrative repayment schedule is generated at sanction. The actual schedule is generated when you initiate a withdrawal, and an updated schedule is generated for each subsequent withdrawal.
