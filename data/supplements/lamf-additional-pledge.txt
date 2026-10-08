@@ -1,16 +1,16 @@
-SHRIRAM CREDIT — LAMF Additional Pledge (Not Available)
+SHRIRAM CREDIT — LAMF Additional Pledge and Collateral Regularisation
 
 Customer question: How can I do an additional pledge?
-Simple answer: Additional pledge is not available right now on Shriram Credit LAMF. You cannot add more mutual fund units to an existing loan through the journey at this time.
+Simple answer: You cannot use additional pledge to increase your sanctioned loan limit through the standard journey after your loan is set up. If your Collateral Comfort is in Action Required or Critical range, you may regularise by pledging additional eligible mutual fund units through MF Central or by making a partial repayment, as explained under Collateral Comfort.
 
 Customer question: Can I pledge more mutual fund units later?
-Simple answer: No. Additional pledge is not possible right now. Once your initial eligible units are pledged during the loan journey, you cannot add more units through MF Central or the online journey at this stage.
+Simple answer: Pledging more units to increase your limit at any time is not part of the standard LAMF journey. If you receive an Action Required or Critical Collateral Comfort notification due to LTV, you can pledge additional eligible units through MF Central or make a partial repayment to regularise the shortfall.
 
 Customer question: Can I add more collateral to my LAMF loan?
-Simple answer: Additional pledge or adding more mutual fund units as collateral is not available at this time.
+Simple answer: For Collateral Comfort regularisation (Action Required or Critical LTV), you may pledge additional eligible mutual fund units through MF Central or make a partial repayment. Adding collateral simply to raise your sanction limit outside that process is not available through the standard journey.
 
 Customer question: What if my mutual fund value falls — can I pledge more units?
-Simple answer: Additional pledge is not available right now. If your mutual fund value falls and you receive a margin or LTV breach notification, please contact the official Shriram Credit support channel for guidance. Partial repayment may be an option as per your loan terms.
+Simple answer: If your mutual fund value falls and your Collateral Comfort moves to Monitor, Action Required, or Critical, follow the notification guidance. For Action Required or Critical, you can pledge additional eligible units through MF Central or make a partial repayment. Collateral Comfort is recalculated using the latest loan outstanding and NAV.
 
 Customer question: Can I change my pledged mutual funds?
-Simple answer: Additional pledge is not available at this time. For any other account or pledge-related query, please use the official Shriram Credit support channel.
+Simple answer: For routine changes or increasing your limit, use the official Shriram Credit support channel. For LTV regularisation under Collateral Comfort, follow pledge additional units or partial repayment options in your Action Required or Critical notification.

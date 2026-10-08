@@ -67,13 +67,13 @@ export function detectAdditionalPledgeQuestion(query) {
 }
 
 export const ADDITIONAL_PLEDGE_CONTEXT =
-  'Customer question: How can I do an additional pledge? ' +
-  'Simple answer: Additional pledge is not available right now on Shriram Credit LAMF. You cannot add more mutual fund units to an existing loan through the journey at this time.';
+  'Customer question: Can I pledge more mutual fund units? ' +
+  'Simple answer: You cannot add units through the standard journey to increase your sanction limit after setup. If Collateral Comfort is Action Required or Critical, you may regularise by pledging additional eligible units through MF Central or by partial repayment. See Collateral Comfort levels and shortfall guidance.';
 
 export function getAdditionalPledgeInstruction() {
   return (
-    'ADDITIONAL PLEDGE (required): The user is asking about additional pledge. ' +
-    'Clearly state that additional pledge is NOT available right now. Do not provide steps to add more units via MF Central or the online journey.'
+    'ADDITIONAL PLEDGE / MORE UNITS (required): The user is asking about pledging more units or additional collateral. ' +
+    'Explain Collateral Comfort: increasing sanction limit via the standard journey is not available; for Action Required or Critical LTV, they may pledge additional eligible units through MF Central or make a partial repayment to regularise.'
   );
 }
 

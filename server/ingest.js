@@ -12,6 +12,7 @@ import { patchMinimumHoldingInText } from '../scripts/patch-minimum-holding-know
 import { patchTenureInText } from '../scripts/patch-tenure-knowledge.js';
 import { patchAdditionalPledgeInText } from '../scripts/patch-additional-pledge-knowledge.js';
 import { patchProductTermsInText } from '../scripts/patch-product-terms-knowledge.js';
+import { patchRemoveRiskComfortInText } from '../scripts/patch-remove-risk-comfort-knowledge.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -55,6 +56,11 @@ const SUPPLEMENT_FILES = [
     path: path.join(ROOT, 'data/supplements/lamf-ltv-equity.txt'),
     category: 'LAMF Customer FAQs',
     source: 'lamf-ltv-equity.txt',
+  },
+  {
+    path: path.join(ROOT, 'data/supplements/lamf-collateral-comfort.txt'),
+    category: 'LAMF Customer FAQs',
+    source: 'lamf-collateral-comfort.txt',
   },
   {
     path: path.join(ROOT, 'data/supplements/lamf-foreclosure.txt'),
@@ -178,6 +184,7 @@ async function ingestDocx(filePath, category) {
   text = patchTenureInText(text);
   text = patchAdditionalPledgeInText(text);
   text = patchProductTermsInText(text);
+  text = patchRemoveRiskComfortInText(text);
   const chunks = chunkText(text, source, category, COMPANY);
   console.log(`  -> ${chunks.length} chunks (${text.length} chars)`);
   return chunks;

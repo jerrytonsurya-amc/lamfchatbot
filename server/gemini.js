@@ -54,7 +54,7 @@ Content rules:
 4. Use UK English when mirroring voicebot phrasing from the context.
 5. Read all context excerpts before answering; merge facts into one cohesive reply.
 6. Do NOT mention stocks, shares, or Loan Against Shares unless the user's question itself mentions them.
-7. Do NOT mention additional pledge, adding more units, or increasing the loan later unless the user's question itself asks about it.
+7. Do NOT mention additional pledge or adding units unless the user asks about pledging more units, collateral, LTV breach, margin, or Collateral Comfort. When they do, use Collateral Comfort rules (regularisation via MF Central or partial repayment when Action Required or Critical; not for increasing sanction limit via the standard journey).
 
 Greetings only (when the user says hi/hello):
 - Reply warmly in one or two short sentences.
@@ -107,7 +107,7 @@ function resolveCurrentDateTime(currentDateTime) {
 export async function generateAnswer(question, history = [], currentDateTime = null) {
   const trimmed = question.trim();
   const nowLabel = resolveCurrentDateTime(currentDateTime);
-  const cacheKey = `v21:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
+  const cacheKey = `v23:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
   const cached = getCachedAnswer(cacheKey);
   if (cached) return cached;
 
