@@ -37,12 +37,12 @@
       '#lamf-chatbot-launcher{position:fixed;bottom:24px;right:24px;z-index:' +
       zIndex +
       ';font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}' +
-      '#lamf-chatbot-btn{width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;' +
-      'background:linear-gradient(145deg,#d4920a,#b87d08);color:#fff;' +
-      'box-shadow:0 8px 24px rgba(212,146,10,.45);display:flex;align-items:center;justify-content:center;' +
-      'transition:transform .2s,box-shadow .2s,background .2s}' +
-      '#lamf-chatbot-btn:hover{transform:scale(1.06);box-shadow:0 10px 28px rgba(212,146,10,.55)}' +
-      '#lamf-chatbot-btn.is-open{background:linear-gradient(145deg,#b87d08,#9a6a06)}' +
+      '#lamf-chatbot-btn{width:56px;height:56px;border-radius:14px;border:none;cursor:pointer;' +
+      'background:#1c2430;color:#fff;' +
+      'box-shadow:0 4px 14px rgba(15,23,42,.22);display:flex;align-items:center;justify-content:center;' +
+      'transition:background .2s,box-shadow .2s}' +
+      '#lamf-chatbot-btn:hover{background:#2a3544;box-shadow:0 6px 18px rgba(15,23,42,.28)}' +
+      '#lamf-chatbot-btn.is-open{background:#2a3544}' +
       '#lamf-chatbot-btn svg{width:28px;height:28px;display:block}' +
       '#lamf-chatbot-panel-wrap{position:fixed;bottom:96px;right:24px;width:' +
       panelWidth +
@@ -55,18 +55,18 @@
       'transition:opacity .25s ease,transform .25s ease}' +
       '#lamf-chatbot-panel-wrap.open{pointer-events:auto;opacity:1;transform:translateY(0) scale(1)}' +
       '#lamf-chatbot-panel{width:100%;height:100%;border:none;border-radius:16px;' +
-      'box-shadow:0 12px 48px rgba(212,146,10,.22),0 8px 32px rgba(15,23,42,.12);' +
+      'box-shadow:0 8px 32px rgba(15,23,42,.14);' +
       'overflow:hidden;background:#fff;display:block}' +
       '@media(max-width:480px){#lamf-chatbot-panel-wrap{bottom:0;right:0;left:0;width:100%;max-width:100%;' +
       'height:100%;max-height:100%;transform:translateY(100%)}' +
       '#lamf-chatbot-panel-wrap.open{transform:translateY(0)}' +
       '#lamf-chatbot-panel{border-radius:0}}' +
       '</style>' +
-      '<button id="lamf-chatbot-btn" type="button" aria-label="Open LAMF AI Assistant" aria-expanded="false">' +
+      '<button id="lamf-chatbot-btn" type="button" aria-label="Open chat support" aria-expanded="false">' +
       BOT_ICON +
       '</button>' +
       '<div id="lamf-chatbot-panel-wrap" aria-hidden="true">' +
-      '<iframe id="lamf-chatbot-panel" title="Shriram Credit LAMF AI Assistant" allow="clipboard-write"></iframe>' +
+      '<iframe id="lamf-chatbot-panel" title="Shriram Credit LAMF Support" allow="clipboard-write"></iframe>' +
       '</div>';
 
     document.body.appendChild(launcher);
@@ -89,7 +89,7 @@
       panelWrap.setAttribute('aria-hidden', open ? 'false' : 'true');
       btn.classList.toggle('is-open', open);
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.setAttribute('aria-label', open ? 'Close LAMF AI Assistant' : 'Open LAMF AI Assistant');
+      btn.setAttribute('aria-label', open ? 'Close chat support' : 'Open chat support');
       btn.innerHTML = open ? CLOSE_ICON : BOT_ICON;
 
       if (open) {

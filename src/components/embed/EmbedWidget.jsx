@@ -16,7 +16,7 @@ import {
   formatPhoneDisplay,
 } from '../../lib/phoneSession.js';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/companyGuard.js';
-import { BotIcon } from '../ChatAvatars';
+import { getShriramLogoSrc, SHRIRAM_CREDIT_LOGO_URL } from '../../lib/shriramBrand.js';
 import './EmbedWidget.css';
 
 const markdownComponents = {
@@ -49,32 +49,53 @@ function EmbedBubble({ role, content, isLoading }) {
 
 function WidgetHeader({ phone, onClose, onChangePhone }) {
   return (
-    <header className="embed-widget-header">
-      <div className="embed-widget-header-main">
-        <div className="embed-widget-brand">
-          <div className="embed-widget-logo-wrap">
-            <div className="embed-widget-logo">
-              <BotIcon size={20} />
-            </div>
-            <span className="embed-widget-online" aria-hidden="true" />
-          </div>
-          <div>
-            <div className="embed-widget-title">Shriram Credit LAMF AI Assistant</div>
-            <div className="embed-widget-subtitle">Ask about eligibility, process, rates &amp; FAQs</div>
-            {phone && (
-              <div className="embed-widget-phone-row">
-                <span className="embed-widget-phone">{formatPhoneDisplay(phone)}</span>
-                <button type="button" className="embed-widget-change" onClick={onChangePhone}>
-                  Change
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <button type="button" className="embed-widget-close" onClick={onClose} aria-label="Close chat">
-          ×
-        </button>
+    <header className={`embed-widget-header${phone ? ' embed-widget-header--with-phone' : ''}`}>
+      <div className="embed-widget-logo-wrap">
+        <img
+          className="embed-widget-logo-img"
+          src={getShriramLogoSrc()}
+          alt="Shriram Credit"
+          width={437}
+          height={132}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = SHRIRAM_CREDIT_LOGO_URL;
+          }}
+        />
       </div>
+      <div className="embed-widget-title">LAMF AI support</div>
+      {phone && (
+        <div className="embed-widget-phone-row">
+          <span className="embed-widget-phone">{formatPhoneDisplay(phone)}</span>
+          <button
+            type="button"
+            className="embed-widget-change"
+            onClick={onChangePhone}
+            aria-label="Change mobile number"
+            title="Change mobile number"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
+      <button type="button" className="embed-widget-close" onClick={onClose} aria-label="Close chat">
+        ×
+      </button>
     </header>
   );
 }
@@ -265,14 +286,23 @@ export default function EmbedWidget({ onClose, standalone = false }) {
         <WidgetHeader onClose={handleClose} />
         <div className="embed-widget-welcome-screen">
           <div className="embed-welcome-card">
-            <h2>Welcome</h2>
-            <p>Please enter your phone number to start chatting</p>
+            <img
+              className="embed-welcome-logo"
+              src={getShriramLogoSrc()}
+              alt="Shriram Credit"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = SHRIRAM_CREDIT_LOGO_URL;
+              }}
+            />
+            <h2>Start a conversation</h2>
+            <p>Enter your mobile number to view your chat history on this device.</p>
             <form onSubmit={handleContinue}>
               <input
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel"
-                placeholder="9876543210"
+                placeholder="Mobile number"
                 value={phoneInput}
                 onChange={(e) => {
                   setPhoneInput(e.target.value);
@@ -307,7 +337,7 @@ export default function EmbedWidget({ onClose, standalone = false }) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Write your message..."
+          placeholder="Type your message…"
           autoComplete="off"
           autoFocus
         />

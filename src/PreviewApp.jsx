@@ -51,7 +51,7 @@ export default function PreviewApp() {
           <h1>Website embed demo</h1>
           <p>
             This page simulates your website with the floating chatbot icon active at the
-            bottom-right. Click the gold bot button to open the chat — enter a phone number to start.
+            bottom-right. Click the chat icon to open support — enter your mobile number to start.
           </p>
           <div className="embed-preview-actions">
             <a href="/" className="embed-preview-link">
@@ -96,8 +96,8 @@ export default function PreviewApp() {
             <p>Withdraw funds in tranches up to your approved drawing power.</p>
           </div>
           <div className="mock-feature-card">
-            <h3>24/7 AI support</h3>
-            <p>Ask our LAMF AI Assistant anything about eligibility and process.</p>
+            <h3>Chat support</h3>
+            <p>Questions on eligibility, rates, or the application process.</p>
           </div>
         </section>
       </main>
