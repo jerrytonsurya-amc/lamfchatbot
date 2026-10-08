@@ -84,3 +84,34 @@ export function getStocksClarificationInstruction() {
     'If they also asked about LTV, loan amount, or eligibility for mutual funds, answer that part after this clarification.'
   );
 }
+
+/** LTV breach, margin, or Collateral Comfort — ensure Critical level includes invocation wording. */
+export function detectCollateralComfortQuestion(query) {
+  const lower = query.toLowerCase().replace(/\s+/g, ' ');
+  return (
+    /\bltv\s*breach\b/.test(lower) ||
+    /\bcollateral comfort\b/.test(lower) ||
+    /\bmargin call\b/.test(lower) ||
+    /\bshortfall amount\b/.test(lower) ||
+    (/\bbreach\b/.test(lower) && /\b(ltv|collateral|pledge|mutual fund)\b/.test(lower)) ||
+    (/\b(invocation|invoke)\b/.test(lower) && /\b(ltv|collateral|pledge|breach)\b/.test(lower)) ||
+    /\b(critical|action required)\b/.test(lower) && /\b(ltv|collateral comfort)\b/.test(lower)
+  );
+}
+
+export const COLLATERAL_COMFORT_LEVELS_CONTEXT =
+  'Customer question: What is an LTV breach? ' +
+  'Simple answer: Collateral Comfort levels — Comfortable: within limits, no action required. ' +
+  'Monitor: Equity above 45% up to 48%; Debt above 75% up to 78%. ' +
+  'Action Required: Equity above 48% up to 49%; Debt above 78% up to 83%; pledge via MF Central or partial repayment. ' +
+  'Critical: Equity 49% or above; Debt 83% or above — immediate corrective action is required. ' +
+  'If the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions.';
+
+export function getCollateralComfortInstruction() {
+  return (
+    'COLLATERAL COMFORT / LTV BREACH (required): When you describe the Critical level (equity 49% or above, debt 83% or above), ' +
+    'you MUST include this sentence immediately after stating that immediate corrective action is required: ' +
+    '"If the required amount is not regularised immediately, your pledged units may be eligible for invocation as per the applicable terms and conditions." ' +
+    'Do NOT mention T+5 or a fixed number of working days to cure an LTV breach.'
+  );
+}

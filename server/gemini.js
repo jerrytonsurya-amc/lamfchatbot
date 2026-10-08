@@ -23,6 +23,9 @@ import {
   getApplyInstruction,
   APPLY_URL,
   APPLY_LINK_MARKDOWN,
+  detectCollateralComfortQuestion,
+  COLLATERAL_COMFORT_LEVELS_CONTEXT,
+  getCollateralComfortInstruction,
 } from '../shared/companyGuard.js';
 import { COMPANY } from '../shared/company.js';
 
@@ -54,7 +57,7 @@ Content rules:
 4. Use UK English when mirroring voicebot phrasing from the context.
 5. Read all context excerpts before answering; merge facts into one cohesive reply.
 6. Do NOT mention stocks, shares, or Loan Against Shares unless the user's question itself mentions them.
-7. Do NOT mention additional pledge or adding units unless the user asks about pledging more units, collateral, LTV breach, margin, or Collateral Comfort. When they do, use Collateral Comfort rules (regularisation via MF Central or partial repayment when Action Required or Critical; not for increasing sanction limit via the standard journey).
+7. Do NOT mention additional pledge or adding units unless the user asks about pledging more units, collateral, LTV breach, margin, or Collateral Comfort. When they do, use Collateral Comfort rules (regularisation via MF Central or partial repayment when Action Required or Critical; not for increasing sanction limit via the standard journey). When describing the Critical level, always add that if the required amount is not regularised immediately, pledged units may be eligible for invocation as per the applicable terms and conditions.
 
 Greetings only (when the user says hi/hello):
 - Reply warmly in one or two short sentences.
@@ -107,7 +110,7 @@ function resolveCurrentDateTime(currentDateTime) {
 export async function generateAnswer(question, history = [], currentDateTime = null) {
   const trimmed = question.trim();
   const nowLabel = resolveCurrentDateTime(currentDateTime);
-  const cacheKey = `v24:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
+  const cacheKey = `v25:${COMPANY}:${nowLabel.slice(0, 10)}:${trimmed.toLowerCase()}`;
   const cached = getCachedAnswer(cacheKey);
   if (cached) return cached;
 
@@ -131,6 +134,7 @@ export async function generateAnswer(question, history = [], currentDateTime = n
 
   const stocksMentioned = detectStocksMention(trimmed);
   const additionalPledgeAsked = detectAdditionalPledgeQuestion(trimmed);
+  const collateralComfortAsked = detectCollateralComfortQuestion(trimmed);
   const applyIntent = detectApplyIntent(trimmed);
 
   const chunks = await retrieveRelevantChunks(question, config.maxContextChunks);
@@ -148,6 +152,9 @@ export async function generateAnswer(question, history = [], currentDateTime = n
   if (additionalPledgeAsked) {
     context = `${ADDITIONAL_PLEDGE_CONTEXT}\n\n${context}`;
   }
+  if (collateralComfortAsked) {
+    context = `${COLLATERAL_COMFORT_LEVELS_CONTEXT}\n\n${context}`;
+  }
   const searchMeta = chunks._meta || {};
 
   const historyText = history
@@ -158,7 +165,7 @@ export async function generateAnswer(question, history = [], currentDateTime = n
   const prompt = `${SYSTEM_PROMPT}
 
 CURRENT DATE AND TIME: ${nowLabel}
-${stocksMentioned ? `\n${getStocksClarificationInstruction()}\n` : ''}${additionalPledgeAsked ? `\n${getAdditionalPledgeInstruction()}\n` : ''}${applyIntent ? `\n${getApplyInstruction()}\n` : ''}
+${stocksMentioned ? `\n${getStocksClarificationInstruction()}\n` : ''}${additionalPledgeAsked ? `\n${getAdditionalPledgeInstruction()}\n` : ''}${collateralComfortAsked ? `\n${getCollateralComfortInstruction()}\n` : ''}${applyIntent ? `\n${getApplyInstruction()}\n` : ''}
 CONTEXT:
 ${context}
 ${historyText ? `\nPRIOR MESSAGES:\n${historyText}\n` : ''}
