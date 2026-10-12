@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { formatPhoneDisplay } from './lib/phoneSession.js';
+import { downloadAdminChatPdf } from './lib/adminChatPdf.js';
 import './AdminApp.css';
 
 const SESSION_KEY = 'lamf_admin_password';
@@ -23,6 +23,22 @@ async function fetchLeads(password) {
   return data;
 }
 
+async function fetchSummary(password, threadId) {
+  const res = await fetch('/api/admin/summary', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password, threadId }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) {
+    const err = new Error(data.error || 'Incorrect password');
+    err.unauthorized = true;
+    throw err;
+  }
+  if (!res.ok) throw new Error(data.details || data.error || 'Failed to generate summary');
+  return data;
+}
+
 function formatDateTime(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('en-IN', {
@@ -32,6 +48,10 @@ function formatDateTime(iso) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function userLabel(lead) {
+  return `User ${lead.userNumber}`;
 }
 
 function LeadBadge({ lead }) {
@@ -93,6 +113,7 @@ function Dashboard({ password, initialData, onLogout }) {
   const [labelFilter, setLabelFilter] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const [summaries, setSummaries] = useState({});
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -121,15 +142,60 @@ function Dashboard({ password, initialData, onLogout }) {
   );
 
   const visibleLeads = useMemo(() => {
-    const digits = search.replace(/\D/g, '');
-    return leads.filter(
-      (l) =>
-        (labelFilter === 'All' || l.lead.label === labelFilter) &&
-        (!digits || l.phoneNumber.includes(digits))
-    );
+    const q = search.trim().toLowerCase();
+    const numOnly = q.replace(/\D/g, '');
+    return leads.filter((l) => {
+      if (labelFilter !== 'All' && l.lead.label !== labelFilter) return false;
+      if (!q) return true;
+      if (`user ${l.userNumber}`.includes(q)) return true;
+      if (numOnly && String(l.userNumber) === numOnly) return true;
+      return l.messages.some((m) => (m.content || '').toLowerCase().includes(q));
+    });
   }, [leads, search, labelFilter]);
 
   const selected = leads.find((l) => l.threadId === selectedId) || null;
+  const selectedSummary = selected ? summaries[selected.threadId] : null;
+
+  const runSummary = useCallback(
+    async (threadId, force = false) => {
+      const existing = summaries[threadId];
+      if (existing?.text && !force) return;
+
+      setSummaries((prev) => ({
+        ...prev,
+        [threadId]: { ...(prev[threadId] || {}), loading: true, error: '' },
+      }));
+
+      try {
+        const data = await fetchSummary(password, threadId);
+        setSummaries((prev) => ({
+          ...prev,
+          [threadId]: {
+            text: data.summary,
+            generatedAt: data.generatedAt,
+            loading: false,
+            error: '',
+          },
+        }));
+      } catch (err) {
+        if (err.unauthorized) onLogout();
+        setSummaries((prev) => ({
+          ...prev,
+          [threadId]: {
+            ...(prev[threadId] || {}),
+            loading: false,
+            error: err.message,
+          },
+        }));
+      }
+    },
+    [password, onLogout]
+  );
+
+  const handleDownloadPdf = useCallback(() => {
+    if (!selected) return;
+    downloadAdminChatPdf(selected, selectedSummary?.text || '');
+  }, [selected, selectedSummary]);
 
   return (
     <div className="admin-page">
@@ -180,7 +246,7 @@ function Dashboard({ password, initialData, onLogout }) {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search mobile number"
+              placeholder="Search user # or chat text"
             />
             <div className="admin-filters">
               {LABELS.map((label) => (
@@ -206,7 +272,7 @@ function Dashboard({ password, initialData, onLogout }) {
                 onClick={() => setSelectedId(l.threadId)}
               >
                 <div className="admin-list-item-top">
-                  <strong>{formatPhoneDisplay(l.phoneNumber)}</strong>
+                  <strong>{userLabel(l)}</strong>
                   <LeadBadge lead={l.lead} />
                 </div>
                 <div className="admin-list-item-meta">
@@ -224,15 +290,32 @@ function Dashboard({ password, initialData, onLogout }) {
             <>
               <div className="admin-detail-header">
                 <div>
-                  <h2>{formatPhoneDisplay(selected.phoneNumber)}</h2>
+                  <h2>{userLabel(selected)}</h2>
                   <div className="admin-detail-meta">
                     First chat {formatDateTime(selected.createdAt)} · Last active {formatDateTime(selected.lastActivity)} ·{' '}
                     {selected.messageCount} messages
                   </div>
                 </div>
-                <div className="admin-score">
-                  <span className="admin-score-value">{selected.lead.score}</span>
-                  <LeadBadge lead={selected.lead} />
+                <div className="admin-detail-actions">
+                  <button
+                    type="button"
+                    className="admin-btn-secondary"
+                    disabled={selectedSummary?.loading}
+                    onClick={() => runSummary(selected.threadId, Boolean(selectedSummary?.text))}
+                  >
+                    {selectedSummary?.loading
+                      ? 'Summarising…'
+                      : selectedSummary?.text
+                        ? 'Refresh AI summary'
+                        : 'AI summary'}
+                  </button>
+                  <button type="button" className="admin-btn-secondary" onClick={handleDownloadPdf}>
+                    Download PDF
+                  </button>
+                  <div className="admin-score">
+                    <span className="admin-score-value">{selected.lead.score}</span>
+                    <LeadBadge lead={selected.lead} />
+                  </div>
                 </div>
               </div>
 
@@ -243,6 +326,24 @@ function Dashboard({ password, initialData, onLogout }) {
                   </span>
                 ))}
               </div>
+
+              {(selectedSummary?.text || selectedSummary?.loading || selectedSummary?.error) && (
+                <section className="admin-summary">
+                  <div className="admin-summary-header">
+                    <h3>AI summary</h3>
+                    {selectedSummary.generatedAt && (
+                      <span className="admin-summary-meta">Generated {formatDateTime(selectedSummary.generatedAt)}</span>
+                    )}
+                  </div>
+                  {selectedSummary.loading && <p className="admin-summary-loading">Generating summary…</p>}
+                  {selectedSummary.error && <div className="admin-error admin-summary-error">{selectedSummary.error}</div>}
+                  {selectedSummary.text && (
+                    <div className="admin-summary-body">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedSummary.text}</ReactMarkdown>
+                    </div>
+                  )}
+                </section>
+              )}
 
               <div className="admin-transcript">
                 {selected.messages.length === 0 && <div className="admin-empty">No messages yet.</div>}

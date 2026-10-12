@@ -10,6 +10,14 @@
     },
     "api/health.js": {
       "memory": 256
+    },
+    "api/admin/summary.js": {
+      "maxDuration": 60,
+      "memory": 512
+    },
+    "api/admin/leads.js": {
+      "maxDuration": 60,
+      "memory": 512
     }
   },
   "rewrites": [

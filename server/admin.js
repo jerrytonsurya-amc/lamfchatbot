@@ -52,6 +52,16 @@ export async function getAdminLeads() {
   const threadsSnap = await getDocs(collection(db, THREADS));
   const phoneThreads = threadsSnap.docs.filter((d) => d.data().phoneNumber);
 
+  const userNumberByThreadId = new Map(
+    [...phoneThreads]
+      .sort(
+        (a, b) =>
+          new Date(toIso(a.data().createdAt) || 0).getTime() -
+          new Date(toIso(b.data().createdAt) || 0).getTime()
+      )
+      .map((doc, index) => [doc.id, index + 1])
+  );
+
   const leads = await Promise.all(
     phoneThreads.map(async (threadDoc) => {
       const thread = threadDoc.data();
@@ -73,7 +83,7 @@ export async function getAdminLeads() {
 
       return {
         threadId: threadDoc.id,
-        phoneNumber: thread.phoneNumber,
+        userNumber: userNumberByThreadId.get(threadDoc.id) || 0,
         createdAt: toIso(thread.createdAt),
         lastActivity,
         messageCount: messages.length,
