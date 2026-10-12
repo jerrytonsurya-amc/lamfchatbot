@@ -78,6 +78,15 @@
   border: 1px solid #fecaca;
   border-radius: var(--radius-sm);
   padding: 8px 12px;
+}
+
+.admin-notice {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin: 0 0 12px;
   font-size: 13px;
 }
 

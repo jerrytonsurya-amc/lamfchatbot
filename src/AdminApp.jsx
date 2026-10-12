@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { downloadAdminChatPdf } from './lib/adminChatPdf.js';
+import { openOutlookChatEmail } from './lib/adminChatEmail.js';
 import './AdminApp.css';
 
 const SESSION_KEY = 'lamf_admin_password';
@@ -114,6 +115,7 @@ function Dashboard({ password, initialData, onLogout }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [summaries, setSummaries] = useState({});
+  const [emailNotice, setEmailNotice] = useState(null);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -197,6 +199,18 @@ function Dashboard({ password, initialData, onLogout }) {
     downloadAdminChatPdf(selected, selectedSummary?.text || '');
   }, [selected, selectedSummary]);
 
+  const handleEmailChat = useCallback(async () => {
+    if (!selected) return;
+    setEmailNotice(null);
+    const result = await openOutlookChatEmail(selected, selectedSummary?.text || '');
+    if (result?.message) {
+      setEmailNotice({ message: result.message, ok: result.ok });
+      if (result.ok) {
+        window.setTimeout(() => setEmailNotice(null), 10000);
+      }
+    }
+  }, [selected, selectedSummary]);
+
   return (
     <div className="admin-page">
       <header className="admin-header">
@@ -215,6 +229,9 @@ function Dashboard({ password, initialData, onLogout }) {
       </header>
 
       {error && <div className="admin-error">{error}</div>}
+      {emailNotice && (
+        <div className={emailNotice.ok ? 'admin-notice' : 'admin-error'}>{emailNotice.message}</div>
+      )}
 
       <section className="admin-stats">
         <div className="admin-stat">
@@ -308,6 +325,9 @@ function Dashboard({ password, initialData, onLogout }) {
                       : selectedSummary?.text
                         ? 'Refresh AI summary'
                         : 'AI summary'}
+                  </button>
+                  <button type="button" className="admin-btn-secondary" onClick={handleEmailChat}>
+                    Send as email
                   </button>
                   <button type="button" className="admin-btn-secondary" onClick={handleDownloadPdf}>
                     Download PDF
