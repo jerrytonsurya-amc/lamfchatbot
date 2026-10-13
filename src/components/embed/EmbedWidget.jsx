@@ -233,12 +233,11 @@ export default function EmbedWidget({ onClose, standalone = false }) {
       try {
         if (detectOutOfScopeQuestion(trimmed)) {
           const reply = getOutOfScopeMessage();
-          if (useLocalOnly) {
-            setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: reply }]);
-          } else {
+          if (!useLocalOnly) {
             await persistMessage('user', trimmed);
             await persistMessage('assistant', reply);
           }
+          setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: reply }]);
           return;
         }
 
@@ -249,18 +248,15 @@ export default function EmbedWidget({ onClose, standalone = false }) {
         const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
         const { answer } = await sendEmbedChatMessage(trimmed, history, phone);
 
-        if (useLocalOnly) {
-          setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: answer }]);
-        }
-        // With Firestore: user is saved client-side; bot reply is saved by /api/chat on the server.
+        setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: answer }]);
+        // Firestore snapshot refreshes the full thread; this keeps the bot visible if sync lags.
       } catch (err) {
         const errorContent = `Sorry, something went wrong: ${err.message}`;
-        if (useLocalOnly) {
-          setMessages((prev) => [
-            ...prev,
-            { id: `e-${Date.now()}`, role: 'assistant', content: errorContent },
-          ]);
-        } else {
+        setMessages((prev) => [
+          ...prev,
+          { id: `e-${Date.now()}`, role: 'assistant', content: errorContent },
+        ]);
+        if (!useLocalOnly) {
           await persistMessage('assistant', errorContent);
         }
       } finally {

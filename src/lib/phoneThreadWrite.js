@@ -29,7 +29,7 @@ export async function loadPhoneThreadMessages(firestore, threadId, threadData = 
   const data =
     threadData || (await getDoc(doc(firestore, THREADS, threadId))).data() || {};
   const inline = parseMessagesFromThreadData(data);
-  if (inline.length > 0) return inline;
+  if (inline !== null) return inline;
   return loadLegacySubcollectionMessages(firestore, threadId);
 }
 
@@ -40,7 +40,7 @@ export async function appendPhoneThreadMessage(firestore, threadId, role, conten
   const threadRef = doc(firestore, THREADS, threadId);
   const preSnap = await getDoc(threadRef);
   let seed = parseMessagesFromThreadData(preSnap.data());
-  if (seed.length === 0) {
+  if (seed === null) {
     seed = await loadLegacySubcollectionMessages(firestore, threadId);
   }
 
@@ -51,7 +51,9 @@ export async function appendPhoneThreadMessage(firestore, threadId, role, conten
     if (!snap.exists()) throw new Error('Thread not found');
 
     let messages = parseMessagesFromThreadData(snap.data());
-    if (messages.length === 0 && seed.length > 0) {
+    if (messages === null) {
+      messages = seed.length > 0 ? seed : [];
+    } else if (messages.length === 0 && seed.length > 0) {
       messages = seed;
     }
 

@@ -19,7 +19,12 @@ import {
 import { COMPANY } from '../../shared/company.js';
 import { getSessionId } from './userSession.js';
 import { getStoredPhone, normalizePhone } from './phoneSession.js';
-import { parseMessagesFromThreadData } from '../../shared/threadMessages.js';
+import {
+  parseMessagesFromThreadData,
+  threadHasInlineMessagesField,
+  legacySubcollectionDocToMessage,
+  sortMessages,
+} from '../../shared/threadMessages.js';
 import { appendPhoneThreadMessage } from './phoneThreadWrite.js';
 
 const firebaseConfig = {
@@ -86,16 +91,15 @@ export function subscribeToPhoneChat(phoneNumber, callback, onError) {
   let threadId = null;
 
   const emitFromThreadDoc = (data) => {
-    const inline = parseMessagesFromThreadData(data);
-    if (inline.length > 0) {
-      if (unsubLegacy) {
-        unsubLegacy();
-        unsubLegacy = null;
-      }
-      callback(inline);
-      return true;
+    if (!threadHasInlineMessagesField(data)) {
+      return false;
     }
-    return false;
+    if (unsubLegacy) {
+      unsubLegacy();
+      unsubLegacy = null;
+    }
+    callback(parseMessagesFromThreadData(data) ?? []);
+    return true;
   };
 
   const q = query(collection(db, THREADS), where('phoneNumber', '==', normalized), limit(1));
@@ -133,14 +137,7 @@ export function subscribeToPhoneChat(phoneNumber, callback, onError) {
             unsubLegacy = onSnapshot(
               messagesQuery,
               (messagesSnap) => {
-                callback(
-                  messagesSnap.docs.map((d) => ({
-                    id: d.id,
-                    role: d.data().role,
-                    content: d.data().content,
-                    createdAt: d.data().createdAt,
-                  }))
-                );
+                callback(sortMessages(messagesSnap.docs.map(legacySubcollectionDocToMessage)));
               },
               (error) => onError?.(error)
             );

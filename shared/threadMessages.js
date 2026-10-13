@@ -38,8 +38,19 @@ export function sortMessages(messages) {
   );
 }
 
+/** True when the thread doc uses the inline `messages` array (including empty []). */
+export function threadHasInlineMessagesField(threadData) {
+  return threadData != null && Array.isArray(threadData.messages);
+}
+
+/**
+ * @returns {null | Array} null = use legacy subcollection; [] = inline field, no messages yet
+ */
 export function parseMessagesFromThreadData(threadData) {
-  if (!threadData || !Array.isArray(threadData.messages) || threadData.messages.length === 0) {
+  if (!threadHasInlineMessagesField(threadData)) {
+    return null;
+  }
+  if (threadData.messages.length === 0) {
     return [];
   }
   return sortMessages(
