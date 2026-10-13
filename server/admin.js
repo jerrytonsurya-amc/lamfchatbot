@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, orderBy } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 import { computeLeadScore } from '../shared/leadScore.js';
-import { normalizeMessageRole } from '../shared/messageRole.js';
+import { loadThreadMessages } from './threadMessagesIO.js';
 
 const FIREBASE_APP_NAME = 'lamf-admin-server';
 const THREADS = 'threads';
@@ -66,18 +66,12 @@ export async function getAdminLeads() {
   const leads = await Promise.all(
     phoneThreads.map(async (threadDoc) => {
       const thread = threadDoc.data();
-      const messagesSnap = await getDocs(
-        query(collection(db, THREADS, threadDoc.id, 'messages'), orderBy('createdAt', 'asc'))
-      );
-      const messages = messagesSnap.docs.map((m) => {
-        const data = m.data();
-        return {
-          id: m.id,
-          role: normalizeMessageRole(data.role),
-          content: data.content || '',
-          createdAt: toIso(data.createdAt),
-        };
-      });
+      const messages = (await loadThreadMessages(db, threadDoc.id, thread)).map((m) => ({
+        id: m.id,
+        role: m.role,
+        content: m.content || '',
+        createdAt: m.createdAt || toIso(m.createdAt),
+      }));
 
       const lastActivity =
         toIso(thread.updatedAt) || messages[messages.length - 1]?.createdAt || toIso(thread.createdAt);

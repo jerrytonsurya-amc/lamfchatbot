@@ -19,7 +19,8 @@ import {
 import { COMPANY } from '../../shared/company.js';
 import { getSessionId } from './userSession.js';
 import { getStoredPhone, normalizePhone } from './phoneSession.js';
-import { normalizeMessageRole } from '../../shared/messageRole.js';
+import { parseMessagesFromThreadData } from '../../shared/threadMessages.js';
+import { appendPhoneThreadMessage } from './phoneThreadWrite.js';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -71,6 +72,7 @@ export async function ensurePhoneThread(phoneNumber) {
     title: `LAMF · +91 ${normalized}`,
     phoneNumber: normalized,
     company: COMPANY,
+    messages: [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -79,34 +81,70 @@ export async function ensurePhoneThread(phoneNumber) {
 
 export function subscribeToPhoneChat(phoneNumber, callback, onError) {
   const normalized = normalizePhone(phoneNumber);
-  let unsubMessages = null;
+  let unsubThreadDoc = null;
+  let unsubLegacy = null;
+  let threadId = null;
+
+  const emitFromThreadDoc = (data) => {
+    const inline = parseMessagesFromThreadData(data);
+    if (inline.length > 0) {
+      if (unsubLegacy) {
+        unsubLegacy();
+        unsubLegacy = null;
+      }
+      callback(inline);
+      return true;
+    }
+    return false;
+  };
 
   const q = query(collection(db, THREADS), where('phoneNumber', '==', normalized), limit(1));
 
-  const unsubThread = onSnapshot(
+  const unsubLookup = onSnapshot(
     q,
     (snapshot) => {
-      if (unsubMessages) unsubMessages();
+      if (unsubThreadDoc) unsubThreadDoc();
+      if (unsubLegacy) unsubLegacy();
 
       if (snapshot.empty) {
+        threadId = null;
         callback([]);
         return;
       }
 
-      const threadId = snapshot.docs[0].id;
-      const messagesQuery = query(
-        collection(db, THREADS, threadId, 'messages'),
-        orderBy('createdAt', 'asc')
-      );
+      threadId = snapshot.docs[0].id;
+      const threadRef = doc(db, THREADS, threadId);
 
-      unsubMessages = onSnapshot(
-        messagesQuery,
-        (messagesSnap) => {
-          const messages = messagesSnap.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          }));
-          callback(messages);
+      unsubThreadDoc = onSnapshot(
+        threadRef,
+        (threadSnap) => {
+          if (!threadSnap.exists()) {
+            callback([]);
+            return;
+          }
+          const data = threadSnap.data();
+          if (emitFromThreadDoc(data)) return;
+
+          if (!unsubLegacy) {
+            const messagesQuery = query(
+              collection(db, THREADS, threadId, 'messages'),
+              orderBy('createdAt', 'asc')
+            );
+            unsubLegacy = onSnapshot(
+              messagesQuery,
+              (messagesSnap) => {
+                callback(
+                  messagesSnap.docs.map((d) => ({
+                    id: d.id,
+                    role: d.data().role,
+                    content: d.data().content,
+                    createdAt: d.data().createdAt,
+                  }))
+                );
+              },
+              (error) => onError?.(error)
+            );
+          }
         },
         (error) => onError?.(error)
       );
@@ -115,8 +153,9 @@ export function subscribeToPhoneChat(phoneNumber, callback, onError) {
   );
 
   return () => {
-    unsubThread();
-    if (unsubMessages) unsubMessages();
+    unsubLookup();
+    if (unsubThreadDoc) unsubThreadDoc();
+    if (unsubLegacy) unsubLegacy();
   };
 }
 
@@ -128,22 +167,7 @@ export async function addPhoneMessage(phoneNumber, role, content, sources = []) 
   }
 
   const threadId = await ensurePhoneThread(phoneNumber);
-  const canonicalRole = normalizeMessageRole(role);
-  const text = typeof content === 'string' ? content.trim() : '';
-  if (!text) return null;
-
-  const msgRef = await addDoc(collection(db, THREADS, threadId, 'messages'), {
-    role: canonicalRole,
-    content: text,
-    sources: Array.isArray(sources) ? sources : [],
-    createdAt: serverTimestamp(),
-  });
-
-  await updateDoc(doc(db, THREADS, threadId), {
-    updatedAt: serverTimestamp(),
-  });
-
-  return msgRef.id;
+  return appendPhoneThreadMessage(db, threadId, role, content, sources);
 }
 
 export function subscribeToThreads(callback, onError) {

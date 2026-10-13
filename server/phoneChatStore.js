@@ -2,9 +2,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import {
   getFirestore,
   collection,
-  doc,
   addDoc,
-  updateDoc,
   getDocs,
   query,
   where,
@@ -13,7 +11,7 @@ import {
 } from 'firebase/firestore/lite';
 import { COMPANY } from '../shared/company.js';
 import { normalizePhone, isValidIndianPhone } from '../shared/phone.js';
-import { normalizeMessageRole } from '../shared/messageRole.js';
+import { appendThreadMessage } from './threadMessagesIO.js';
 
 const FIREBASE_APP_NAME = 'lamf-phone-chat-store';
 const THREADS = 'threads';
@@ -53,13 +51,14 @@ async function ensurePhoneThread(db, normalizedPhone) {
     title: `LAMF · +91 ${normalizedPhone}`,
     phoneNumber: normalizedPhone,
     company: COMPANY,
+    messages: [],
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   return ref.id;
 }
 
-/** Persist a chat turn message (user or assistant) for a phone thread. */
+/** Append user or assistant message to the thread document `messages` array. */
 export async function appendPhoneChatMessage(phoneNumber, role, content, sources = []) {
   const normalized = normalizePhone(phoneNumber);
   if (!isValidIndianPhone(normalized)) return null;
@@ -69,18 +68,8 @@ export async function appendPhoneChatMessage(phoneNumber, role, content, sources
 
   const db = getDb();
   const threadId = await ensurePhoneThread(db, normalized);
-  const canonicalRole = normalizeMessageRole(role);
+  const result = await appendThreadMessage(db, threadId, role, content, sources);
+  if (!result) return null;
 
-  const msgRef = await addDoc(collection(db, THREADS, threadId, 'messages'), {
-    role: canonicalRole,
-    content: text,
-    sources: Array.isArray(sources) ? sources : [],
-    createdAt: serverTimestamp(),
-  });
-
-  await updateDoc(doc(db, THREADS, threadId), {
-    updatedAt: serverTimestamp(),
-  });
-
-  return { threadId, messageId: msgRef.id, role: canonicalRole };
+  return { threadId, messageId: result.messageId, role: result.role };
 }
