@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { generateAnswer } from './gemini.js';
+import { appendPhoneChatMessage } from './phoneChatStore.js';
+import { isValidIndianPhone } from '../shared/phone.js';
 import { getIndexStats } from './rag.js';
 import { getAdminLeads, isValidAdminPassword } from './admin.js';
 import { summarizeAdminThread } from './adminSummary.js';
@@ -23,13 +25,21 @@ app.get('/api/health', (_req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   try {
-    const { message, history = [], currentDateTime = null } = req.body;
+    const { message, history = [], currentDateTime = null, phoneNumber = null } = req.body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
     const { answer, sources } = await generateAnswer(message.trim(), history, currentDateTime);
+
+    if (phoneNumber && isValidIndianPhone(phoneNumber)) {
+      try {
+        await appendPhoneChatMessage(phoneNumber, 'assistant', answer, sources);
+      } catch (persistErr) {
+        console.error('Failed to persist assistant message:', persistErr);
+      }
+    }
 
     res.json({ answer, sources });
   } catch (err) {

@@ -5,16 +5,20 @@ export function getEmbedApiBase() {
   return window.LAMF_CHATBOT_API_BASE || window.location.origin;
 }
 
-export async function sendEmbedChatMessage(message, history = []) {
+export async function sendEmbedChatMessage(message, history = [], phoneNumber = null) {
   const apiBase = getEmbedApiBase().replace(/\/$/, '');
+  const payload = {
+    message,
+    history,
+    currentDateTime: getClientDateTime(),
+  };
+  if (phoneNumber) {
+    payload.phoneNumber = phoneNumber;
+  }
   const res = await fetch(`${apiBase}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message,
-      history,
-      currentDateTime: getClientDateTime(),
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {

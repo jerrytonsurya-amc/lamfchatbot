@@ -1,10 +1,11 @@
 import { generateText } from './claude.js';
 import { getAdminLeads, isValidAdminPassword } from './admin.js';
+import { isUserMessage } from '../shared/messageRole.js';
 
 function buildTranscript(messages) {
   return messages
     .map((m) => {
-      const who = m.role === 'user' ? 'Customer' : 'Assistant';
+      const who = isUserMessage(m.role) ? 'User' : 'Bot';
       return `${who}: ${(m.content || '').trim()}`;
     })
     .join('\n\n');

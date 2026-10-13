@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import { generateAnswer } from '../server/gemini.js';
+import { appendPhoneChatMessage } from '../server/phoneChatStore.js';
+import { isValidIndianPhone } from '../shared/phone.js';
 
 export const maxDuration = 300;
 
@@ -15,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, history = [], currentDateTime = null } = req.body;
+    const { message, history = [], currentDateTime = null, phoneNumber = null } = req.body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
@@ -26,6 +28,14 @@ export default async function handler(req, res) {
       history,
       currentDateTime
     );
+
+    if (phoneNumber && isValidIndianPhone(phoneNumber)) {
+      try {
+        await appendPhoneChatMessage(phoneNumber, 'assistant', answer, sources);
+      } catch (persistErr) {
+        console.error('[chat] failed to persist assistant message:', persistErr);
+      }
+    }
 
     console.log(`[chat] LAMF answered in ${Date.now() - started}ms`);
     return res.status(200).json({ answer, sources, runtime: process.env.VERCEL === '1' ? 'vercel' : 'local' });

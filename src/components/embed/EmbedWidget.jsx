@@ -16,6 +16,7 @@ import {
   formatPhoneDisplay,
 } from '../../lib/phoneSession.js';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/companyGuard.js';
+import { normalizeMessageRole } from '../../../shared/messageRole.js';
 import { getShriramLogoSrc, SHRIRAM_CREDIT_LOGO_URL } from '../../lib/shriramBrand.js';
 import './EmbedWidget.css';
 
@@ -155,7 +156,7 @@ export default function EmbedWidget({ onClose, standalone = false }) {
       (nextMessages) => {
         const formatted = nextMessages.map((m) => ({
           id: m.id,
-          role: m.role,
+          role: normalizeMessageRole(m.role),
           content: m.content,
         }));
         setMessages(formatted);
@@ -246,13 +247,12 @@ export default function EmbedWidget({ onClose, standalone = false }) {
         }
 
         const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
-        const { answer } = await sendEmbedChatMessage(trimmed, history);
+        const { answer } = await sendEmbedChatMessage(trimmed, history, phone);
 
         if (useLocalOnly) {
           setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: answer }]);
-        } else {
-          await persistMessage('assistant', answer);
         }
+        // With Firestore: user is saved client-side; bot reply is saved by /api/chat on the server.
       } catch (err) {
         const errorContent = `Sorry, something went wrong: ${err.message}`;
         if (useLocalOnly) {

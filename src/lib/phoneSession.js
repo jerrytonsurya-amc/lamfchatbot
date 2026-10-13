@@ -1,17 +1,8 @@
+import { normalizePhone, isValidIndianPhone } from '../../shared/phone.js';
+
+export { normalizePhone, isValidIndianPhone };
+
 const PHONE_KEY = 'lamf_user_phone';
-
-export function normalizePhone(phone) {
-  const digits = String(phone || '').replace(/\D/g, '');
-  if (digits.length === 10) return digits;
-  if (digits.length === 12 && digits.startsWith('91')) return digits.slice(2);
-  if (digits.length === 11 && digits.startsWith('0')) return digits.slice(1);
-  return digits;
-}
-
-export function isValidIndianPhone(phone) {
-  const normalized = normalizePhone(phone);
-  return /^[6-9]\d{9}$/.test(normalized);
-}
 
 export function formatPhoneDisplay(phone) {
   const n = normalizePhone(phone);

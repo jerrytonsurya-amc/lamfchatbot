@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { downloadAdminChatPdf } from './lib/adminChatPdf.js';
 import { openOutlookChatEmail } from './lib/adminChatEmail.js';
+import { isUserMessage } from '../shared/messageRole.js';
 import './AdminApp.css';
 
 const SESSION_KEY = 'lamf_admin_password';
@@ -367,20 +368,23 @@ function Dashboard({ password, initialData, onLogout }) {
 
               <div className="admin-transcript">
                 {selected.messages.length === 0 && <div className="admin-empty">No messages yet.</div>}
-                {selected.messages.map((m) => (
-                  <div key={m.id} className={`admin-msg admin-msg--${m.role === 'user' ? 'user' : 'bot'}`}>
+                {selected.messages.map((m) => {
+                  const fromUser = isUserMessage(m.role);
+                  return (
+                  <div key={m.id} className={`admin-msg admin-msg--${fromUser ? 'user' : 'bot'}`}>
                     <div className="admin-msg-bubble">
-                      {m.role === 'user' ? (
+                      {fromUser ? (
                         m.content
                       ) : (
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                       )}
                     </div>
                     <div className="admin-msg-time">
-                      {m.role === 'user' ? 'Customer' : 'Bot'} · {formatDateTime(m.createdAt)}
+                      {fromUser ? 'User' : 'Bot'} · {formatDateTime(m.createdAt)}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}

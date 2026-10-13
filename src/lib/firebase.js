@@ -19,6 +19,7 @@ import {
 import { COMPANY } from '../../shared/company.js';
 import { getSessionId } from './userSession.js';
 import { getStoredPhone, normalizePhone } from './phoneSession.js';
+import { normalizeMessageRole } from '../../shared/messageRole.js';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -120,8 +121,29 @@ export function subscribeToPhoneChat(phoneNumber, callback, onError) {
 }
 
 export async function addPhoneMessage(phoneNumber, role, content, sources = []) {
+  const normalized = normalizePhone(phoneNumber);
+  const stored = getStoredPhone();
+  if (!stored || stored !== normalized) {
+    throw new Error('Access denied');
+  }
+
   const threadId = await ensurePhoneThread(phoneNumber);
-  return addMessage(threadId, role, content, sources);
+  const canonicalRole = normalizeMessageRole(role);
+  const text = typeof content === 'string' ? content.trim() : '';
+  if (!text) return null;
+
+  const msgRef = await addDoc(collection(db, THREADS, threadId, 'messages'), {
+    role: canonicalRole,
+    content: text,
+    sources: Array.isArray(sources) ? sources : [],
+    createdAt: serverTimestamp(),
+  });
+
+  await updateDoc(doc(db, THREADS, threadId), {
+    updatedAt: serverTimestamp(),
+  });
+
+  return msgRef.id;
 }
 
 export function subscribeToThreads(callback, onError) {

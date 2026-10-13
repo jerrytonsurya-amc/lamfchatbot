@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { initializeApp, getApps } from 'firebase/app';
 import { getFirestore, collection, getDocs, query, orderBy } from 'firebase/firestore/lite';
 import { computeLeadScore } from '../shared/leadScore.js';
+import { normalizeMessageRole } from '../shared/messageRole.js';
 
 const FIREBASE_APP_NAME = 'lamf-admin-server';
 const THREADS = 'threads';
@@ -72,7 +73,7 @@ export async function getAdminLeads() {
         const data = m.data();
         return {
           id: m.id,
-          role: data.role,
+          role: normalizeMessageRole(data.role),
           content: data.content || '',
           createdAt: toIso(data.createdAt),
         };
