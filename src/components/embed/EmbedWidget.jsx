@@ -9,26 +9,51 @@ import {
 } from '../../lib/firebase.js';
 import { loadPhoneMessages, savePhoneMessages } from '../../lib/phoneChatStorage.js';
 import {
-  getStoredPhone,
+  getVerifiedPhone,
   setStoredPhone,
   clearStoredPhone,
+  markPhoneOtpVerified,
   isValidIndianPhone,
+  normalizePhone,
   formatPhoneDisplay,
 } from '../../lib/phoneSession.js';
 import { detectOutOfScopeQuestion, getOutOfScopeMessage } from '../../../shared/companyGuard.js';
 import { normalizeMessageRole } from '../../../shared/messageRole.js';
-import { getShriramLogoSrc, SHRIRAM_CREDIT_LOGO_URL } from '../../lib/shriramBrand.js';
 import './EmbedWidget.css';
+
+const ACCESS_OTP = '0000';
 
 const markdownComponents = {
   a: ({ node, ...props }) => <a {...props} target="_blank" rel="noopener noreferrer" />,
 };
+
+function FolioFace() {
+  return (
+    <span className="folio-face" aria-hidden="true">
+      <span className="folio-eye" />
+      <span className="folio-eye" />
+    </span>
+  );
+}
+
+function AssistantCopy({ content }) {
+  return (
+    <div className="embed-assistant">
+      <div className="embed-assistant-copy">
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {content}
+        </ReactMarkdown>
+      </div>
+    </div>
+  );
+}
 
 function EmbedBubble({ role, content, isLoading }) {
   const isUser = role === 'user';
 
   return (
     <div className={`embed-bubble ${role}`}>
+      {!isUser && <FolioFace />}
       <div className="embed-bubble-body">
         {isLoading ? (
           <div className="embed-typing">
@@ -39,61 +64,44 @@ function EmbedBubble({ role, content, isLoading }) {
         ) : isUser ? (
           <p>{content}</p>
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-            {content}
-          </ReactMarkdown>
+          <AssistantCopy content={content} />
         )}
       </div>
     </div>
   );
 }
 
-function WidgetHeader({ phone, onClose, onChangePhone }) {
+function FailedReply({ onRetry }) {
   return (
-    <header className={`embed-widget-header${phone ? ' embed-widget-header--with-phone' : ''}`}>
-      <div className="embed-widget-logo-wrap">
-        <img
-          className="embed-widget-logo-img"
-          src={getShriramLogoSrc()}
-          alt="Shriram Credit"
-          width={437}
-          height={132}
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = SHRIRAM_CREDIT_LOGO_URL;
-          }}
-        />
+    <div className="embed-fail">
+      <FolioFace />
+      <div className="embed-fail-card">
+        <p>Sorry, that reply did not come through.</p>
+        <button type="button" className="embed-text-link" onClick={onRetry}>
+          Try Again
+        </button>
       </div>
-      <div className="embed-widget-title">LAMF AI support</div>
-      {phone && (
-        <div className="embed-widget-phone-row">
-          <span className="embed-widget-phone">{formatPhoneDisplay(phone)}</span>
-          <button
-            type="button"
-            className="embed-widget-change"
-            onClick={onChangePhone}
-            aria-label="Change mobile number"
-            title="Change mobile number"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+    </div>
+  );
+}
+
+function WidgetHeader({ onClose, onNewChat, showNewChat }) {
+  return (
+    <header className="embed-widget-header">
+      <div className="embed-header-brand">
+        <FolioFace />
+        <div className="embed-header-copy">
+          <h1>Folio</h1>
+          <div className="embed-header-sub">
+            <span>AI assistant</span>
+            {showNewChat && (
+              <button type="button" className="embed-new-chat" onClick={onNewChat}>
+                New chat
+              </button>
+            )}
+          </div>
         </div>
-      )}
+      </div>
       <button type="button" className="embed-widget-close" onClick={onClose} aria-label="Close chat">
         ×
       </button>
@@ -102,17 +110,25 @@ function WidgetHeader({ phone, onClose, onChangePhone }) {
 }
 
 export default function EmbedWidget({ onClose, standalone = false }) {
-  const [phase, setPhase] = useState(() => (getStoredPhone() ? 'chat' : 'welcome'));
-  const [phone, setPhone] = useState(() => getStoredPhone());
+  const [phase, setPhase] = useState(() => (getVerifiedPhone() ? 'chat' : 'welcome'));
+  const [phone, setPhone] = useState(() => getVerifiedPhone());
   const [phoneInput, setPhoneInput] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [pendingPhone, setPendingPhone] = useState('');
+  const [otpInput, setOtpInput] = useState('');
+  const [otpError, setOtpError] = useState('');
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [useLocalOnly, setUseLocalOnly] = useState(!isFirebaseConfigured());
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
+  const [showBackOnline, setShowBackOnline] = useState(false);
+  const [failedText, setFailedText] = useState(null);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const wasLoadingRef = useRef(false);
+  const queuedRef = useRef(null);
+  const sendMessageRef = useRef(null);
 
   const focusChatInput = useCallback(() => {
     requestAnimationFrame(() => {
@@ -122,26 +138,39 @@ export default function EmbedWidget({ onClose, standalone = false }) {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading, phase]);
+  }, [messages, isLoading, phase, failedText, isOnline, showBackOnline]);
 
   useEffect(() => {
-    if (phase === 'chat') {
-      focusChatInput();
-    }
+    if (phase === 'chat') focusChatInput();
   }, [phase, focusChatInput]);
 
   useEffect(() => {
-    if (wasLoadingRef.current && !isLoading) {
-      focusChatInput();
-    }
+    if (wasLoadingRef.current && !isLoading) focusChatInput();
     wasLoadingRef.current = isLoading;
   }, [isLoading, focusChatInput]);
 
   useEffect(() => {
-    if (phase === 'chat' && !isLoading) {
-      focusChatInput();
-    }
-  }, [messages, phase, isLoading, focusChatInput]);
+    const onOnline = () => {
+      setIsOnline(true);
+      setShowBackOnline(true);
+      const queued = queuedRef.current;
+      queuedRef.current = null;
+      if (queued && sendMessageRef.current) {
+        sendMessageRef.current(queued, { alreadyShown: true, persistUser: true });
+      }
+      window.setTimeout(() => setShowBackOnline(false), 4000);
+    };
+    const onOffline = () => {
+      setIsOnline(false);
+      setShowBackOnline(false);
+    };
+    window.addEventListener('online', onOnline);
+    window.addEventListener('offline', onOffline);
+    return () => {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('offline', onOffline);
+    };
+  }, []);
 
   useEffect(() => {
     if (phase !== 'chat' || !phone) return undefined;
@@ -159,7 +188,14 @@ export default function EmbedWidget({ onClose, standalone = false }) {
           role: normalizeMessageRole(m.role),
           content: m.content,
         }));
-        setMessages(formatted);
+        setMessages((prev) => {
+          const pending = prev.filter(
+            (m) =>
+              m.pending &&
+              !formatted.some((s) => s.role === m.role && s.content === m.content)
+          );
+          return [...formatted, ...pending];
+        });
         savePhoneMessages(phone, formatted);
       },
       (err) => {
@@ -192,18 +228,39 @@ export default function EmbedWidget({ onClose, standalone = false }) {
       setPhoneError('Enter a valid 10-digit Indian mobile number');
       return;
     }
-    const normalized = setStoredPhone(phoneInput);
+    const normalized = normalizePhone(phoneInput);
     setPhoneError('');
+    setPendingPhone(normalized);
+    setOtpInput('');
+    setOtpError('');
+    setPhase('otp');
+  };
+
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+    const code = otpInput.replace(/\D/g, '');
+    if (code !== ACCESS_OTP) {
+      setOtpError('Incorrect OTP. Please try again.');
+      return;
+    }
+    const normalized = setStoredPhone(pendingPhone);
+    markPhoneOtpVerified();
+    setOtpError('');
     setPhone(normalized);
     setPhase('chat');
   };
 
-  const handleChangePhone = () => {
+  const handleNewChat = () => {
     clearStoredPhone();
     setPhone(null);
     setPhoneInput('');
+    setPendingPhone('');
+    setOtpInput('');
+    setOtpError('');
     setMessages([]);
     setPhoneError('');
+    setFailedText(null);
+    queuedRef.current = null;
     setPhase('welcome');
   };
 
@@ -221,50 +278,60 @@ export default function EmbedWidget({ onClose, standalone = false }) {
   );
 
   const sendMessage = useCallback(
-    async (text) => {
+    async (text, options = {}) => {
       const trimmed = text.trim();
       if (!trimmed || isLoading || !phone) return;
 
-      const userMsg = { id: `u-${Date.now()}`, role: 'user', content: trimmed };
-      setMessages((prev) => [...prev, userMsg]);
-      setInput('');
+      const alreadyShown = Boolean(options.alreadyShown);
+      if (!alreadyShown) {
+        const userMsg = { id: `u-${Date.now()}`, role: 'user', content: trimmed, pending: true };
+        setMessages((prev) => [...prev, userMsg]);
+        setInput('');
+      }
+      setFailedText(null);
+
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        queuedRef.current = trimmed;
+        setIsOnline(false);
+        return;
+      }
+
       setIsLoading(true);
 
       try {
+        if (!useLocalOnly && (!alreadyShown || options.persistUser)) {
+          await persistMessage('user', trimmed);
+        }
+
         if (detectOutOfScopeQuestion(trimmed)) {
           const reply = getOutOfScopeMessage();
-          if (!useLocalOnly) {
-            await persistMessage('user', trimmed);
-            await persistMessage('assistant', reply);
-          }
+          if (!useLocalOnly) await persistMessage('assistant', reply);
           setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: reply }]);
           return;
         }
 
-        if (!useLocalOnly) {
-          await persistMessage('user', trimmed);
-        }
-
-        const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
+        const prior = messages.filter((m) => m.role === 'user' || m.role === 'assistant');
+        const last = prior[prior.length - 1];
+        const historySource =
+          last && last.role === 'user' && last.content === trimmed
+            ? prior
+            : [...prior, { role: 'user', content: trimmed }];
+        const history = historySource.map((m) => ({ role: m.role, content: m.content }));
         const { answer } = await sendEmbedChatMessage(trimmed, history, phone);
-
         setMessages((prev) => [...prev, { id: `a-${Date.now()}`, role: 'assistant', content: answer }]);
-        // Firestore snapshot refreshes the full thread; this keeps the bot visible if sync lags.
       } catch (err) {
-        const errorContent = `Sorry, something went wrong: ${err.message}`;
-        setMessages((prev) => [
-          ...prev,
-          { id: `e-${Date.now()}`, role: 'assistant', content: errorContent },
-        ]);
-        if (!useLocalOnly) {
-          await persistMessage('assistant', errorContent);
-        }
+        console.warn('Chat reply failed:', err);
+        setFailedText(trimmed);
       } finally {
         setIsLoading(false);
       }
     },
     [isLoading, messages, phone, useLocalOnly, persistMessage]
   );
+
+  useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -276,73 +343,124 @@ export default function EmbedWidget({ onClose, standalone = false }) {
     standalone ? 'embed-widget--standalone' : 'embed-widget--frame',
   ].join(' ');
 
-  if (phase === 'welcome') {
-    return (
-      <div className={widgetClass}>
-        <WidgetHeader onClose={handleClose} />
-        <div className="embed-widget-welcome-screen">
-          <div className="embed-welcome-card">
-            <img
-              className="embed-welcome-logo"
-              src={getShriramLogoSrc()}
-              alt="Shriram Credit"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = SHRIRAM_CREDIT_LOGO_URL;
-              }}
-            />
-            <h2>Start a conversation</h2>
-            <p>Enter your mobile number to view your chat history on this device.</p>
-            <form onSubmit={handleContinue}>
-              <input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="Mobile number"
-                value={phoneInput}
-                onChange={(e) => {
-                  setPhoneInput(e.target.value);
-                  if (phoneError) setPhoneError('');
-                }}
-                aria-invalid={Boolean(phoneError)}
-              />
-              {phoneError && <p className="embed-welcome-error">{phoneError}</p>}
-              <button type="submit">Continue</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={widgetClass}>
-      <WidgetHeader phone={phone} onClose={handleClose} onChangePhone={handleChangePhone} />
+      <WidgetHeader
+        onClose={handleClose}
+        onNewChat={handleNewChat}
+        showNewChat={phase === 'chat'}
+      />
 
-      <div className="embed-widget-messages">
-        {messages.map((msg) => (
-          <EmbedBubble key={msg.id} role={msg.role} content={msg.content} />
-        ))}
-        {isLoading && <EmbedBubble role="assistant" isLoading />}
-        <div ref={bottomRef} />
-      </div>
+      {phase === 'welcome' || phase === 'otp' ? (
+        <div className="embed-widget-welcome-screen">
+          <div className="embed-welcome-card">
+            {phase === 'welcome' ? (
+              <>
+                <h2>Start a conversation</h2>
+                <p>Enter your mobile number. We will send an OTP before opening the chat.</p>
+                <form onSubmit={handleContinue}>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="Mobile number"
+                    value={phoneInput}
+                    onChange={(e) => {
+                      setPhoneInput(e.target.value);
+                      if (phoneError) setPhoneError('');
+                    }}
+                    aria-invalid={Boolean(phoneError)}
+                  />
+                  {phoneError && <p className="embed-welcome-error">{phoneError}</p>}
+                  <button type="submit">Continue</button>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2>Enter OTP</h2>
+                <p>
+                  Enter the 4-digit code sent to {formatPhoneDisplay(pendingPhone)} to open the chat.
+                </p>
+                <form onSubmit={handleVerifyOtp}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="0000"
+                    maxLength={4}
+                    value={otpInput}
+                    onChange={(e) => {
+                      setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 4));
+                      if (otpError) setOtpError('');
+                    }}
+                    aria-invalid={Boolean(otpError)}
+                    autoFocus
+                  />
+                  {otpError && <p className="embed-welcome-error">{otpError}</p>}
+                  <button type="submit" disabled={otpInput.length !== 4}>
+                    Verify
+                  </button>
+                </form>
+                <button type="button" className="embed-otp-back" onClick={() => setPhase('welcome')}>
+                  Change number
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="embed-widget-messages">
+            {phone && (
+              <div className="embed-notice">
+                Number verified. This chat is saved to {formatPhoneDisplay(phone)} on this device.
+              </div>
+            )}
+            {messages.map((msg) => (
+              <EmbedBubble key={msg.id} role={msg.role} content={msg.content} />
+            ))}
+            {!isOnline && (
+              <div className="embed-notice embed-notice--offline">
+                You are offline. Messages will send once you are back.
+              </div>
+            )}
+            {isLoading && <EmbedBubble role="assistant" isLoading />}
+            {failedText && <FailedReply onRetry={() => sendMessage(failedText, { alreadyShown: true })} />}
+            {showBackOnline && isOnline && <div className="embed-notice embed-notice--online">Back online.</div>}
+            <div ref={bottomRef} />
+          </div>
 
-      <form className="embed-widget-input" onSubmit={handleSubmit}>
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message…"
-          autoComplete="off"
-          autoFocus
-        />
-        <button type="submit" disabled={isLoading || !input.trim()} aria-label="Send">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-          </svg>
-        </button>
-      </form>
+          <form className="embed-widget-input" onSubmit={handleSubmit}>
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about your loan"
+              autoComplete="off"
+              autoFocus
+            />
+            <button type="submit" disabled={isLoading || !input.trim()} aria-label="Send">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M22 2L11 13"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M22 2L15 22l-4-9-9-4 20-7z"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </form>
+        </>
+      )}
     </div>
   );
 }
